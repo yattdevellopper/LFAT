@@ -216,7 +216,7 @@ class Paiement(models.Model):
     ]
 
     etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE, verbose_name="Élève")
-    montant = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Montant Payé (XOF)")
+    montant = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Montant Payé (FCFA)")
     montant_du = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Montant Total Dû", blank=True, null=True) # Utile pour le solde
     date_paiement = models.DateField(default=timezone.now, verbose_name="Date du Paiement")
     motif_paiement = models.CharField(max_length=100, choices=MOTIF_PAIEMENT_CHOICES, verbose_name="Motif du Paiement")
@@ -233,7 +233,7 @@ class Paiement(models.Model):
         ordering = ['-date_paiement', 'etudiant__nom']
 
     def __str__(self):
-        return f"Paiement de {self.etudiant.prenom} {self.etudiant.nom} - {self.montant} XOF ({self.statut})"
+        return f"Paiement de {self.etudiant.prenom} {self.etudiant.nom} - {self.montant} FCFA ({self.statut})"
 
 # Modèle pour le suivi des présences
 class Presence(models.Model):

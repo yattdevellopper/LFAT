@@ -145,17 +145,17 @@
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <div class="alert alert-info text-center py-2">
-                                <strong>Total Dû:</strong> {{ total_du|floatformat:2|default:"0.00" }} XOF
+                                <strong>Total Dû:</strong> {{ total_du|floatformat:2|default:"0.00" }}FCFA
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="alert alert-success text-center py-2">
-                                <strong>Total Payé:</strong> {{ total_paye|floatformat:2|default:"0.00" }} XOF
+                                <strong>Total Payé:</strong> {{ total_paye|floatformat:2|default:"0.00" }}FCFA
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="alert alert-{% if solde_restant > 0 %}danger{% else %}success{% endif %} text-center py-2">
-                                <strong>Solde Restant:</strong> {{ solde_restant|floatformat:2|default:"0.00" }} XOF
+                                <strong>Solde Restant:</strong> {{ solde_restant|floatformat:2|default:"0.00" }}FCFA
                             </div>
                         </div>
                     </div>

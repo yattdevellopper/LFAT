@@ -18,6 +18,13 @@ from reportlab.lib.units import inch
 from datetime import datetime
 from datetime import date
 
+
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Table, TableStyle
+
 # Importez tous vos formulaires
 from .forms import (
     EtudiantForm, DossierInscriptionImageForm, NoteForm, PaiementForm, PresenceForm,
@@ -29,6 +36,28 @@ from .models import (
     Etudiant, AnneeScolaire, Enseignant, Classe, Matiere, ProgrammeMatiere,
     Note, Paiement, Presence, DossierInscriptionImage, CertificatFrequentation
 )
+
+from django.db.models import Q  # Pour les recherches complexes
+
+@login_required
+def recherche_etudiants(request):
+    query = request.GET.get('q', '')
+    resultats = []
+
+    if query:
+        resultats = Etudiant.objects.filter(
+            Q(nom__icontains=query) |
+            Q(prenom__icontains=query) |
+            Q(numero_matricule__icontains=query) |
+            Q(classe__nom_classe__icontains=query)
+        ).select_related('classe', 'annee_scolaire_inscription')
+
+    context = {
+        'query': query,
+        'resultats': resultats,
+    }
+    return render(request, 'dashboard/etudiants/recherche_etudiants.html', context)
+
 
 # --- Vues du Dashboard Général ---
 @login_required
@@ -350,7 +379,6 @@ def generer_certificat_frequentation(request, etudiant_id):
     return response
 
 # --- Génération de Bulletin Scolaire ---
-@login_required
 def generer_bulletin_scolaire(request, etudiant_id, periode): # Ex: periode = 'Trimestre 1' ou 'Annuelle'
     etudiant = get_object_or_404(Etudiant, pk=etudiant_id)
     annee_scolaire_active = AnneeScolaire.objects.filter(active=True).first() # Ou passer l'ID de l'année en paramètre
@@ -466,8 +494,6 @@ def generer_bulletin_scolaire(request, etudiant_id, periode): # Ex: periode = 'T
     return response
 
 
-
-@login_required # Optionnel : protège cette vue aux utilisateurs connectés
 @login_required # Optionnel : protège cette vue aux utilisateurs connectés
 def liste_paiements_par_classe_etudiant(request):
     # 1. Obtenir l'année scolaire active
@@ -975,6 +1001,8 @@ def liste_paiements_impayes(request):
 # --- CRUD pour les Présences ---
 @login_required
 def marquer_presence_classe(request, classe_id):
+    matiere_id = request.GET.get('matiere_id')
+
     classe = get_object_or_404(Classe, pk=classe_id)
     date_aujourdhui = date.today()
     annee_active = AnneeScolaire.objects.filter(active=True).first()
@@ -988,8 +1016,11 @@ def marquer_presence_classe(request, classe_id):
         annee_scolaire_inscription=annee_active
     ).order_by('nom', 'prenom')
 
-    PresenceFormSet = formset_factory(PresenceForm, extra=0)
+    # 🔍 Appliquer le filtre matière si fourni (si Etudiant a une relation à Matiere)
+    if matiere_id:
+        etudiants_de_la_classe = etudiants_de_la_classe.filter(matiere_id=matiere_id)
 
+    PresenceFormSet = formset_factory(PresenceForm, extra=0)
     initial_data = []
 
     existing_presences_list = Presence.objects.filter(
@@ -1005,6 +1036,7 @@ def marquer_presence_classe(request, classe_id):
             initial_data.append({
                 'id': presence_instance.id,
                 'etudiant': etudiant,
+                'etudiant_obj': etudiant,
                 'classe': classe,
                 'date': date_aujourdhui,
                 'annee_scolaire': annee_active,
@@ -1014,12 +1046,13 @@ def marquer_presence_classe(request, classe_id):
                 'heure_fin_cours': presence_instance.heure_fin_cours,
                 'motif_absence_retard': presence_instance.motif_absence_retard,
                 'justificatif_fourni': presence_instance.justificatif_fourni,
-                'est_present': True if presence_instance.statut == 'Présent' else False,
+                'est_present': presence_instance.statut == 'Présent',
                 'statut_detail': presence_instance.statut if presence_instance.statut != 'Présent' else '',
             })
         else:
             initial_data.append({
                 'etudiant': etudiant,
+                'etudiant_obj': etudiant,
                 'classe': classe,
                 'date': date_aujourdhui,
                 'annee_scolaire': annee_active,
@@ -1035,10 +1068,7 @@ def marquer_presence_classe(request, classe_id):
                 with transaction.atomic():
                     for form in formset:
                         est_present = form.cleaned_data.get('est_present')
-                        
-                        # --- MODIFICATION CLÉ ICI ---
                         statut_detail_from_form = form.cleaned_data.get('statut_detail')
-                        # ----------------------------
 
                         if form.instance.pk:
                             presence_instance = form.instance
@@ -1058,13 +1088,7 @@ def marquer_presence_classe(request, classe_id):
                             presence_instance.motif_absence_retard = ''
                             presence_instance.justificatif_fourni = False
                         else:
-                            # Assurez-vous que le statut n'est jamais vide si l'élève n'est pas présent
-                            if statut_detail_from_form:
-                                presence_instance.statut = statut_detail_from_form
-                            else:
-                                # Définit un statut par défaut si rien n'a été sélectionné (ou si la valeur est vide)
-                                presence_instance.statut = 'Absent' # Vous pouvez choisir 'Retard' si c'est plus approprié
-                            
+                            presence_instance.statut = statut_detail_from_form or 'Absent'
                             presence_instance.matiere = form.cleaned_data.get('matiere')
                             presence_instance.heure_debut_cours = form.cleaned_data.get('heure_debut_cours')
                             presence_instance.heure_fin_cours = form.cleaned_data.get('heure_fin_cours')
@@ -1076,7 +1100,6 @@ def marquer_presence_classe(request, classe_id):
                     messages.success(request, f"La présence pour la classe {classe.nom_classe} a été enregistrée avec succès.")
                     return redirect('liste_classes')
             except Exception as e:
-                # C'est ici que l'erreur NOT NULL constraint failed est capturée
                 messages.error(request, f"Une erreur est survenue lors de l'enregistrement : {e}")
         else:
             messages.error(request, "Veuillez corriger les erreurs dans le formulaire.")
@@ -1084,6 +1107,7 @@ def marquer_presence_classe(request, classe_id):
         formset = PresenceFormSet(initial=initial_data)
 
     toutes_les_classes = Classe.objects.all().order_by('nom_classe')
+    toutes_les_matieres = Matiere.objects.all().order_by('nom')  # 👈 nécessaire pour ton filtre JS
 
     context = {
         'classe': classe,
@@ -1091,8 +1115,12 @@ def marquer_presence_classe(request, classe_id):
         'formset': formset,
         'annee_active': annee_active,
         'toutes_les_classes': toutes_les_classes,
+        'toutes_les_matieres': toutes_les_matieres,
+        'matiere_id': matiere_id,  # pour pré-sélectionner la matière dans le <select>
     }
     return render(request, 'dashboard/presences/marquer_presence_classe.html', context)
+
+
 @login_required
 def suivi_presence_classe(request, classe_id):
     classe = get_object_or_404(Classe, pk=classe_id)

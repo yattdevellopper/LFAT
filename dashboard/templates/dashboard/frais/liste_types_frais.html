@@ -21,7 +21,7 @@
                 {% for type_frais in types_frais %}
                     <tr>
                         <td>{{ type_frais.nom }}</td>
-                        <td>{{ type_frais.montant_standard|floatformat:2 }} XOF</td>
+                        <td>{{ type_frais.montant_standard|floatformat:2 }} FCFA</td>
                         <td>{{ type_frais.annee_scolaire.annee }}</td>
                         <td>{{ type_frais.description|default:"-" }}</td>
                         <td>

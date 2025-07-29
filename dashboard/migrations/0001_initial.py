@@ -123,7 +123,7 @@ class Migration(migrations.Migration):
             name='Paiement',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('montant', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Montant Payé (XOF)')),
+                ('montant', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Montant Payé (FCFA)')),
                 ('montant_du', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True, verbose_name='Montant Total Dû')),
                 ('date_paiement', models.DateField(default=django.utils.timezone.now, verbose_name='Date du Paiement')),
                 ('motif_paiement', models.CharField(choices=[('Frais de Scolarité', 'Frais de Scolarité'), ("Frais d'Inscription", "Frais d'Inscription"), ('Cotisation APEM', 'Cotisation APEM'), ('Tenue Scolaire', 'Tenue Scolaire'), ('Repas Scolaire', 'Repas Scolaire'), ('Autres', 'Autres')], max_length=100, verbose_name='Motif du Paiement')),

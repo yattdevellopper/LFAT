@@ -31,8 +31,8 @@
             <ul>
                 <li><strong>Élève :</strong> {{ etudiant.prenom }} {{ etudiant.nom }}</li>
                 <li><strong>Motif :</strong> {{ paiement.motif_paiement|default:"N/A" }}</li>
-                <li><strong>Montant Payé :</strong> {{ paiement.montant|floatformat:2|default:"N/A" }} XOF</li>
-                <li><strong>Montant Dû (pour ce motif) :</strong> {{ paiement.montant_du|floatformat:2|default:"N/A" }} XOF</li>
+                <li><strong>Montant Payé :</strong> {{ paiement.montant|floatformat:2|default:"N/A" }} FCFA</li>
+                <li><strong>Montant Dû (pour ce motif) :</strong> {{ paiement.montant_du|floatformat:2|default:"N/A" }} FCFA</li>
                 <li><strong>Date du Paiement :</strong> {{ paiement.date_paiement|date:"d M Y" }}</li>
                 <li><strong>Statut :</strong> {{ paiement.statut|default:"N/A" }}</li>
                 <li><strong>Numéro de Reçu :</strong> {{ paiement.recu_numero|default:"N/A" }}</li>

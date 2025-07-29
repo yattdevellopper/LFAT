@@ -1,0 +1,23 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<h2>Recherche d'étudiants</h2>
+
+<form method="get">
+    <input type="text" name="q" value="{{ query }}" placeholder="Nom, prénom, matricule ou classe..." required>
+    <button type="submit">Rechercher</button>
+</form>
+
+{% if resultats %}
+    <h3>Résultats :</h3>
+    <ul>
+        {% for etudiant in resultats %}
+            <li>
+                {{ etudiant.nom }} {{ etudiant.prenom }} — Classe : {{ etudiant.classe.nom_classe }} — Matricule : {{ etudiant.numero_matricule }}
+                (<a href="{% url 'detail_etudiant' etudiant.id %}">Voir</a>)
+            </li>
+        {% endfor %}
+    </ul>
+{% elif query %}
+    <p>Aucun étudiant trouvé.</p>
+{% endif %}
+{% endblock %}

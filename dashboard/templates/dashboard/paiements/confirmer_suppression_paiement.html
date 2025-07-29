@@ -6,7 +6,7 @@
     <h2 class="mb-4">Confirmer la Suppression du Paiement</h2>
     <div class="alert alert-danger" role="alert">
         <i class="fas fa-exclamation-triangle me-2"></i>
-        Êtes-vous sûr de vouloir supprimer le paiement de <strong>{{ paiement.montant_paye|floatformat:2 }} XOF</strong> (dû : {{ paiement.montant_du|floatformat:2 }} XOF) pour <strong>{{ paiement.etudiant.prenom }} {{ paiement.etudiant.nom }}</strong> (Motif: {{ paiement.motif_paiement }})?
+        Êtes-vous sûr de vouloir supprimer le paiement de <strong>{{ paiement.montant_paye|floatformat:2 }} FCFA</strong> (dû : {{ paiement.montant_du|floatformat:2 }} FCFA) pour <strong>{{ paiement.etudiant.prenom }} {{ paiement.etudiant.nom }}</strong> (Motif: {{ paiement.motif_paiement }})?
         <p class="mt-2"><strong>Attention :</strong> Cette action est irréversible et modifiera le statut de paiement de l'élève.</p>
     </div>
 

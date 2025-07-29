@@ -63,7 +63,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td>
                             {# Affichage du nom et prénom de l'étudiant #}
-                            **{{ form.etudiant.value.prenom }} {{ form.etudiant.value.nom }}**
+                            <strong>{{ form.initial.etudiant_obj.prenom }} {{ form.initial.etudiant_obj.nom }}</strong>
                             
                             {# Champs cachés, ne pas supprimer #}
                             {{ form.etudiant }} {# Champ caché de l'ID de l'étudiant #}
