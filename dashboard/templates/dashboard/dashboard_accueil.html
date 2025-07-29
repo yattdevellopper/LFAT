@@ -1,0 +1,182 @@
+{% extends 'dashboard/base.html' %}
+{% load static %} {# Required if you're using static files like custom CSS or images #}
+
+{% block title %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Tableau de Bord</h1>
+    {# Display active school year. 'default' filter handles cases where annee_active is None #}
+    <span class="badge bg-primary fs-5">Année Scolaire Active : {{ annee_active.annee|default:"Non définie" }}</span>
+</div>
+
+{# Django Messages Display #}
+{% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{# Conditional display if no active school year is set #}
+{% if not annee_active %}
+    <div class="alert alert-warning text-center" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Aucune année scolaire active n'est configurée. La plupart des données ne peuvent pas être affichées.
+        Veuillez <a href="{% url 'liste_annees_scolaires' %}" class="alert-link">définir une année scolaire active</a>.
+    </div>
+{% else %}
+    {# Info Cards / Statistic Boxes #}
+    <div class="row">
+        {# Card: Élèves avec paiements impayés #}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col me-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Élèves avec paiements impayés</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ eleves_non_payes_compte|default:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Card: Absents Aujourd'hui #}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col me-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Absents Aujourd'hui</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ absents_aujourd_hui|default:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-minus fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Card: Total Payé (Année Active) #}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col me-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Payé (Année Active)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_paye|floatformat:2|default:"0.00" }} FCFA</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-wallet fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Card: Total Impayé (Année Active) #}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col me-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Impayé (Année Active)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_impaye|floatformat:2|default:"0.00" }} FCFA</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hand-holding-dollar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Two-column section below the info cards #}
+    <div class="row">
+        {# Left Column Card: Informations Générales #}
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations Générales</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Total Élèves Inscrits (Année Active)
+                            <span class="badge bg-primary rounded-pill">{{ etudiants_recents|length|default:0 }}</span> {# Use length filter if it's a list #}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Nombre de Classes Actives
+                            <span class="badge bg-primary rounded-pill">{{ classes_actives|default:0 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Nombre d'Enseignants
+                            <span class="badge bg-primary rounded-pill">{{ enseignants_actifs|default:0 }}</span>
+                        </li>
+                        {# Add other general statistics here if needed #}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {# Right Column Card: Élèves Récemment Inscrits #}
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Élèves Récemment Inscrits</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow animated--fade-in"
+                            aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Actions:</div>
+                            <a class="dropdown-item" href="{% url 'creer_etudiant' %}">Nouvelle Inscription</a>
+                            <a class="dropdown-item" href="{% url 'liste_etudiants' %}">Voir Tous les Élèves</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if etudiants_recents %}
+                    <div class="list-group">
+                        {% for etudiant in etudiants_recents %}
+                            <a href="{% url 'detail_etudiant' etudiant.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ etudiant.prenom }} {{ etudiant.nom }}</h6>
+                                    <small class="text-muted">Classe: {{ etudiant.classe.nom_classe|default:"Non assignée" }}</small>
+                                </div>
+                                <span class="badge bg-info rounded-pill">{{ etudiant.date_inscription|date:"d M" }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                        <p class="text-center text-muted">Aucun élève récemment inscrit pour cette année scolaire.</p>
+                        <div class="text-center">
+                            <a href="{% url 'creer_etudiant' %}" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-plus-circle me-1"></i>Inscrire le premier élève</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# You can add more blocks here, e.g., charts, quick links, etc. #}
+
+{% endif %} {# End of if not annee_active #}
+
+{% endblock %}

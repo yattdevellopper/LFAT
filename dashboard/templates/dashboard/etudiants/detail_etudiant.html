@@ -1,0 +1,331 @@
+{% extends 'dashboard/base.html' %}
+{% load static %} {# Pour le chemin de 'default_profile.png' #}
+
+{% block title %}Détails de l'Élève : {{ etudiant.prenom }} {{ etudiant.nom }}{% endblock %}
+
+{% block content %}
+    {# En-tête de la page avec titre et boutons d'action #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Détails de l'Élève : {{ etudiant.prenom }} {{ etudiant.nom }}</h2>
+        <div>
+            <a href="{% url 'modifier_etudiant' etudiant.pk %}" class="btn btn-warning me-2"><i class="fas fa-edit me-2"></i>Modifier</a>
+            {# Le bouton de suppression déclenche la modale de confirmation #}
+            <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"><i class="fas fa-trash-alt me-2"></i>Supprimer</a>
+        </div>
+    </div>
+
+    <div class="row">
+        {# Colonne de gauche : Profil, Infos Perso, Documents d'Inscription #}
+        <div class="col-md-4">
+            {# Carte de profil de l'élève #}
+            <div class="card mb-4 p-4 text-center">
+                {% if etudiant.photo_profil %}
+                    <img src="{{ etudiant.photo_profil.url }}" alt="Photo de profil" class="img-fluid rounded-circle mx-auto mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    {# Image par défaut si aucune photo n'est présente #}
+                    <img src="{% static 'images/default_profile.png' %}" alt="Pas de photo" class="img-fluid rounded-circle mx-auto mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% endif %}
+                <h5>{{ etudiant.prenom }} {{ etudiant.nom }}</h5>
+                <p class="text-muted">{{ etudiant.classe.nom_classe|default:"Non assigné" }} - {{ etudiant.annee_scolaire_inscription.annee|default:"Non définie" }}</p>
+                {# Badge de statut avec couleur conditionnelle #}
+                <p>Statut: <span class="badge bg-{% if etudiant.statut == 'Actif' %}success{% elif etudiant.statut == 'Suspendu' %}warning{% else %}secondary{% endif %}">{{ etudiant.statut }}</span></p>
+            </div>
+
+            {# Carte des informations personnelles #}
+            <div class="card mb-4 p-4">
+                <h5 class="card-title">Informations Personnelles</h5>
+                <p><strong>Numéro Matricule:</strong> {{ etudiant.numero_matricule|default:"N/A" }}</p>
+                <p><strong>Date de Naissance:</strong> {{ etudiant.date_naissance|date:"d M Y"|default:"Non renseignée" }}</p>
+                <p><strong>Lieu de Naissance:</strong> {{ etudiant.lieu_naissance|default:"Non renseigné" }}</p>
+                <p><strong>Sexe:</strong> {{ etudiant.get_genre_display|default:"Non renseigné" }}</p>
+                <p><strong>Nationalité:</strong> {{ etudiant.nationalite|default:"Non renseignée" }}</p>
+                <p><strong>Adresse:</strong> {{ etudiant.adresse|default:"Non renseignée" }}</p>
+                <p><strong>Ville:</strong> {{ etudiant.ville|default:"Non renseignée" }}</p>
+                <p><strong>Contact Parent:</strong> {{ etudiant.contact_parent|default:"Non renseigné" }}</p>
+                <p><strong>Email Parent:</strong> {{ etudiant.email_parent|default:"Non renseigné" }}</p>
+            </div>
+
+            {# Carte des documents d'inscription #}
+            <div class="card mb-4 p-4">
+                <h5 class="card-title">Documents d'Inscription</h5>
+                {% if dossier_images %} {# Vérifie si la liste dossier_images n'est pas vide #}
+                    <ul class="list-group list-group-flush">
+                        {% for doc in dossier_images %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ doc.description|default:"Document" }}
+                                {# Vérifie si l'image est associée avant d'afficher le lien #}
+                                {% if doc.image %}
+                                    <a href="{{ doc.image.url }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-image me-1"></i>Voir</a>
+                                {% else %}
+                                    <span class="text-muted">Fichier non disponible</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Aucun document d'inscription n'a été téléversé.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Colonne de droite : Onglets (Notes, Paiements, Présences, Certificats) #}
+        <div class="col-md-8">
+            {# Barre de navigation des onglets #}
+            <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="true">Notes</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="paiements-tab" data-bs-toggle="tab" data-bs-target="#paiements" type="button" role="tab" aria-controls="paiements" aria-selected="false">Paiements</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="presences-tab" data-bs-toggle="tab" data-bs-target="#presences" type="button" role="tab" aria-controls="presences" aria-selected="false">Présences</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="certificats-tab" data-bs-toggle="tab" data-bs-target="#certificats" type="button" role="tab" aria-controls="certificats" aria-selected="false">Certificats</button>
+                </li>
+            </ul>
+
+            {# Contenu des onglets #}
+            <div class="tab-content" id="myTabContent">
+                {# Onglet Notes #}
+                <div class="tab-pane fade show active" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Notes de l'Élève</h5>
+                        <a href="{% url 'ajouter_note' etudiant.pk %}" class="btn btn-success btn-sm"><i class="fas fa-plus-circle me-1"></i>Ajouter Note</a>
+                    </div>
+                    {% if notes %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Matière</th>
+                                        <th>Période</th>
+                                        <th>Note</th>
+                                        <th>Année</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for note in notes %}
+                                        <tr>
+                                            <td>{{ note.matiere.nom|default:"N/A" }}</td>
+                                            <td>{{ note.periode_evaluation|default:"N/A" }}</td>
+                                            <td>{{ note.valeur|floatformat:2|default:"N/A" }}/20</td>
+                                            <td>{{ note.annee_scolaire.annee|default:"N/A" }}</td>
+                                            <td>
+                                                <a href="{% url 'modifier_note' note.pk %}" class="btn btn-warning btn-sm me-1"><i class="fas fa-edit"></i></a>
+                                                <a href="{% url 'supprimer_note' note.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {# Liens pour générer les bulletins #}
+                        <div class="mt-3">
+                            <h6>Générer Bulletin :</h6>
+                            <a href="{% url 'generer_bulletin_scolaire' etudiant.pk 'Trimestre 1' %}" class="btn btn-info btn-sm me-2"><i class="fas fa-file-pdf me-1"></i>T1</a>
+                            <a href="{% url 'generer_bulletin_scolaire' etudiant.pk 'Trimestre 2' %}" class="btn btn-info btn-sm me-2"><i class="fas fa-file-pdf me-1"></i>T2</a>
+                            <a href="{% url 'generer_bulletin_scolaire' etudiant.pk 'Trimestre 3' %}" class="btn btn-info btn-sm me-2"><i class="fas fa-file-pdf me-1"></i>T3</a>
+                            <a href="{% url 'generer_bulletin_scolaire' etudiant.pk 'Annuelle' %}" class="btn btn-primary btn-sm"><i class="fas fa-file-pdf me-1"></i>Annuel</a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucune note enregistrée pour cet élève.</p>
+                    {% endif %}
+                </div>
+
+                {# Onglet Paiements #}
+                <div class="tab-pane fade" id="paiements" role="tabpanel" aria-labelledby="paiements-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Historique des Paiements</h5>
+                        <a href="{% url 'ajouter_paiement' etudiant.pk %}" class="btn btn-success btn-sm"><i class="fas fa-plus-circle me-1"></i>Ajouter Paiement</a>
+                    </div>
+                    {# Résumé des totaux de paiement #}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="alert alert-info text-center py-2">
+                                <strong>Total Dû:</strong> {{ total_du|floatformat:2|default:"0.00" }} XOF
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-success text-center py-2">
+                                <strong>Total Payé:</strong> {{ total_paye|floatformat:2|default:"0.00" }} XOF
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-{% if solde_restant > 0 %}danger{% else %}success{% endif %} text-center py-2">
+                                <strong>Solde Restant:</strong> {{ solde_restant|floatformat:2|default:"0.00" }} XOF
+                            </div>
+                        </div>
+                    </div>
+                    {% if paiements %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Motif</th>
+                                        <th>Montant Payé</th> {# Renommé pour clarté #}
+                                        <th>Montant Dû</th>
+                                        <th>Statut</th>
+                                        <th>Mode</th>
+                                        <th>Reçu N°</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for paiement in paiements %}
+                                        <tr>
+                                            <td>{{ paiement.date_paiement|date:"d M Y" }}</td>
+                                            <td>{{ paiement.motif_paiement|default:"N/A" }}</td>
+                                            <td>{{ paiement.montant|floatformat:2|default:"0.00" }}</td>
+                                            <td>{{ paiement.montant_du|floatformat:2|default:"0.00" }}</td>
+                                            <td><span class="badge bg-{% if paiement.statut == 'Payé' %}success{% elif paiement.statut == 'Partiel' %}warning{% else %}danger{% endif %}">{{ paiement.statut }}</span></td>
+                                            <td>{{ paiement.mode_paiement|default:"N/A" }}</td>
+                                            <td>{{ paiement.recu_numero|default:"N/A" }}</td>
+                                            <td>
+                                                <a href="{% url 'modifier_paiement' paiement.pk %}" class="btn btn-warning btn-sm me-1"><i class="fas fa-edit"></i></a>
+                                                <a href="{% url 'supprimer_paiement' paiement.pk %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucun paiement enregistré pour cet élève.</p>
+                    {% endif %}
+                </div>
+
+                {# Onglet Présences #}
+                <div class="tab-pane fade" id="presences" role="tabpanel" aria-labelledby="presences-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Historique des Présences</h5>
+                        {# Le bouton ici devrait potentiellement marquer la présence pour l'élève actuel ou sa classe #}
+                        <a href="{% url 'marquer_presence_classe' etudiant.classe.pk %}" class="btn btn-primary btn-sm"><i class="fas fa-calendar-plus me-1"></i>Marquer la présence pour la classe</a>
+                    </div>
+                    {# Résumé des statuts de présence #}
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="alert alert-success text-center py-2">
+                                <strong>Présent:</strong> {{ total_jours_presents|default:0 }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert alert-danger text-center py-2">
+                                <strong>Absent:</strong> {{ total_jours_absents|default:0 }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert alert-warning text-center py-2">
+                                <strong>Retard:</strong> {{ total_jours_retard|default:0 }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert alert-info text-center py-2">
+                                <strong>Excusé:</strong> {{ total_jours_excuses|default:0 }}
+                            </div>
+                        </div>
+                    </div>
+                    {% if presences %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Matière/Cours</th> {# Ajusté le titre #}
+                                        <th>Statut</th>
+                                        <th>Motif</th>
+                                        <th>Justificatif</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for presence in presences %}
+                                        <tr>
+                                            <td>{{ presence.date|date:"d M Y" }}</td>
+                                            <td>{{ presence.matiere.nom|default:"Général" }}</td>
+                                            <td><span class="badge bg-{% if presence.statut == 'Présent' %}success{% elif presence.statut == 'Absent' %}danger{% elif presence.statut == 'Retard' %}warning{% else %}info{% endif %}">{{ presence.statut }}</span></td>
+                                            <td>{{ presence.motif_absence_retard|default:"-" }}</td>
+                                            <td>
+                                                {% if presence.justificatif_fourni %}
+                                                    <i class="fas fa-check-circle text-success"></i> Oui
+                                                {% else %}
+                                                    <i class="fas fa-times-circle text-danger"></i> Non
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucune présence enregistrée pour cet élève.</p>
+                    {% endif %}
+                </div>
+
+                {# Onglet Certificats #}
+                <div class="tab-pane fade" id="certificats" role="tabpanel" aria-labelledby="certificats-tab">
+                    <h5>Générer ou Voir Certificats</h5>
+                    <a href="{% url 'generer_certificat_frequentation' etudiant.pk %}" class="btn btn-primary mt-3"><i class="fas fa-file-pdf me-2"></i>Générer Certificat de Fréquentation</a>
+                    
+                    <div class="mt-4">
+                        <h6>Certificats existants :</h6>
+                        {# Assurez-vous que CertificatFrequentation a une relation ForeignKey vers Etudiant #}
+                        {% if etudiant.certificatfrequentation_set.all %}
+                            <ul class="list-group">
+                                {% for cert in etudiant.certificatfrequentation_set.all %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Certificat pour {{ cert.annee_scolaire.annee|default:"Année inconnue" }}
+                                        {# LA CORRECTION CLÉ : Vérifie si le fichier PDF existe avant d'essayer d'accéder à son URL #}
+                                        {% if cert.fichier_pdf %}
+                                            <a href="{{ cert.fichier_pdf.url }}" target="_blank" class="btn btn-sm btn-outline-info" download><i class="fas fa-download me-1"></i>Télécharger</a>
+                                        {% else %}
+                                            <span class="text-muted"><i class="fas fa-exclamation-triangle me-1"></i>Fichier non disponible</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Aucun certificat généré pour cet élève.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Modale de confirmation de suppression #}
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmer la Suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr de vouloir supprimer cet élève ? Toutes les données associées (notes, paiements, présences, etc.) seront également supprimées. Cette action est irréversible.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    {# Le formulaire de suppression est ici, le bouton déclenche l'envoi du formulaire #}
+                    <form action="{% url 'supprimer_etudiant' etudiant.pk %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+{# Script d'initialisation des tooltips Bootstrap (si vous en avez) #}
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

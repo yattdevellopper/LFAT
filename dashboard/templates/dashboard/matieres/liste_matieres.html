@@ -1,0 +1,45 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Liste des Matières{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Liste des Matières</h2>
+    <a href="{% url 'creer_matiere' %}" class="btn btn-primary mb-3"><i class="fas fa-plus-circle me-2"></i>Ajouter une Matière</a>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Nom de la Matière</th>
+                    <th>Code Matière</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for matiere in matieres %}
+                    <tr>
+                        <td>{{ matiere.nom }}</td>
+                        <td>{{ matiere.code_matiere|default:"N/A" }}</td>
+                        <td>
+                            <a href="{% url 'modifier_matiere' matiere.pk %}" class="btn btn-warning btn-sm me-1" data-bs-toggle="tooltip" title="Modifier"><i class="fas fa-edit"></i></a>
+                            <a href="{% url 'supprimer_matiere' matiere.pk %}" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Supprimer"><i class="fas fa-trash-alt"></i></a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">Aucune matière enregistrée pour le moment.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

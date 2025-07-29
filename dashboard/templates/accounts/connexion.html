@@ -1,0 +1,66 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg p-4">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Connexion</h2>
+
+                {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Nom d'utilisateur ou mot de passe invalide. Veuillez réessayer.
+                    </div>
+                {% endif %}
+
+                {% if next %}
+                    {% if user.is_authenticated %}
+                        <div class="alert alert-warning" role="alert">
+                            Votre compte n'a pas accès à cette page. Pour continuer, veuillez vous connecter avec un compte qui a cet accès.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            Veuillez vous connecter pour voir cette page.
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Nom d'utilisateur</label>
+                        {{ form.username }}
+                        {% for error in form.username.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">Mot de passe</label>
+                        {{ form.password }}
+                        {% for error in form.password.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2 mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-sign-in-alt me-2"></i>Se Connecter</button>
+                    </div>
+
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+
+                <div class="text-center mt-3">
+                    <p><a href="{% url 'password_reset' %}" class="text-decoration-none">Mot de passe oublié ?</a></p>
+                    {% comment %}
+                        Si vous avez une page d'inscription, décommentez la ligne suivante:
+                        <p>Pas encore de compte ? <a href="{% url 'inscription' %}" class="text-decoration-none">S'inscrire</a></p>
+                    {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

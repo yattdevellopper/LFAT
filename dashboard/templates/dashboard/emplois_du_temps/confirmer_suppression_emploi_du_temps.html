@@ -1,0 +1,23 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Confirmer Suppression Bloc EDT{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Confirmer la Suppression du Bloc d'Emploi du Temps</h2>
+    <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Êtes-vous sûr de vouloir supprimer ce bloc d'emploi du temps : <br>
+        <strong>Classe :</strong> {{ emploi_du_temps.classe.nom_classe }}<br>
+        <strong>Jour :</strong> {{ emploi_du_temps.jour_semaine }}<br>
+        <strong>Heure :</strong> {{ emploi_du_temps.heure_debut|time:"H:i" }} - {{ emploi_du_temps.heure_fin|time:"H:i" }}<br>
+        <strong>Matière :</strong> {{ emploi_du_temps.matiere.nom }}<br>
+        <strong>Enseignant :</strong> {{ emploi_du_temps.enseignant.prenom }} {{ emploi_du_temps.enseignant.nom }}<br>
+        <p class="mt-2"><strong>Attention :</strong> Cette action est irréversible.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger me-2"><i class="fas fa-trash-alt me-2"></i>Confirmer la Suppression</button>
+        <a href="{% url 'liste_emplois_du_temps' %}" class="btn btn-secondary"><i class="fas fa-times-circle me-2"></i>Annuler</a>
+    </form>
+{% endblock %}

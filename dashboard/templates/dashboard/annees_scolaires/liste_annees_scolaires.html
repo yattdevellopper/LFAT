@@ -1,0 +1,74 @@
+{% extends 'dashboard/base.html' %}
+{% load static %} {# Assurez-vous que load static est présent si vous utilisez des fichiers statiques #}
+
+{% block title %}Gestion des Années Scolaires{% endblock %}
+
+{% block content %}
+    {# Ajoutez cette section pour afficher l'année actuelle #}
+    <div class="alert alert-info mb-4" role="alert">
+        <i class="fas fa-calendar-alt me-2"></i>
+        Année Civile Actuelle : <strong>{{ current_calendar_year }}</strong>
+        {% if current_academic_year_string %}
+        | Année Scolaire Actuelle (suggérée) : <strong>{{ current_academic_year_string }}</strong>
+        {% endif %}
+    </div>
+
+    <h2 class="mb-4">Années Scolaires</h2>
+    <a href="{% url 'creer_annee_scolaire' %}" class="btn btn-primary mb-3"><i class="fas fa-plus-circle me-2"></i>Ajouter une Année Scolaire</a>
+
+    {% if annees_scolaires %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Année</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for annee in annees_scolaires %}
+                        <tr>
+                            <td>{{ annee.annee }}</td>
+                            {# Les champs date_debut et date_fin ne sont pas dans votre modèle AnneeScolaire #}
+                            {# Vous devrez les ajouter à votre modèle si vous voulez les afficher #}
+                            <td>N/A</td> {# ou {{ annee.date_debut|date:"d M Y" }} si vous les ajoutez #}
+                            <td>N/A</td> {# ou {{ annee.date_fin|date:"d M Y" }} si vous les ajoutez #}
+                            <td>
+                                {% if annee.active %} {# Utilisez 'active' qui est le nom du champ de votre modèle #}
+                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Oui</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Non</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'modifier_annee_scolaire' annee.pk %}" class="btn btn-warning btn-sm me-1" data-bs-toggle="tooltip" title="Modifier"><i class="fas fa-edit"></i></a>
+                                {% if not annee.active %} {# Utilisez 'active' #}
+                                <a href="{% url 'supprimer_annee_scolaire' annee.pk %}" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Supprimer"><i class="fas fa-trash-alt"></i></a>
+                                {% endif %}
+                                {% if not annee.active %}
+                                <a href="{% url 'activer_annee_scolaire' annee.pk %}" class="btn btn-info btn-sm ms-2" data-bs-toggle="tooltip" title="Définir comme active"><i class="fas fa-toggle-on"></i></a>
+                                {% else %}
+                                <button class="btn btn-info btn-sm ms-2" disabled data-bs-toggle="tooltip" title="Déjà active"><i class="fas fa-toggle-on"></i> Active</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="alert alert-info">Aucune année scolaire n'a été définie pour le moment. Veuillez en ajouter une.</p>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

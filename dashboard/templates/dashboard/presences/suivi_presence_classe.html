@@ -1,0 +1,76 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Suivi des Présences pour {{ classe.nom_classe }}{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Suivi des Présences pour la classe : {{ classe.nom_classe }} (Année : {{ annee_active.annee }})</h2>
+
+    <div class="mb-3">
+        <form method="GET" action="{% url 'suivi_presence_classe' classe.pk %}" class="d-flex">
+            <label for="date_filter" class="form-label me-2 mt-1">Filtrer par date :</label>
+            <input type="date" id="date_filter" name="date" class="form-control me-2" style="max-width: 200px;" value="{{ date_filtre|date:'Y-m-d' }}">
+            <button type="submit" class="btn btn-info"><i class="fas fa-filter me-1"></i>Filtrer</button>
+            {% if date_filtre %}
+                <a href="{% url 'suivi_presence_classe' classe.pk %}" class="btn btn-outline-secondary ms-2"><i class="fas fa-times me-1"></i>Effacer Filtre</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if presences_par_etudiant %}
+        <div class="accordion" id="accordionPresence">
+            {% for etudiant, presences in presences_par_etudiant.items %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ etudiant.pk }}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ etudiant.pk }}" aria-expanded="false" aria-controls="collapse{{ etudiant.pk }}">
+                        {{ etudiant.prenom }} {{ etudiant.nom }}
+                    </button>
+                </h2>
+                <div id="collapse{{ etudiant.pk }}" class="accordion-collapse collapse" aria-labelledby="heading{{ etudiant.pk }}" data-bs-parent="#accordionPresence">
+                    <div class="accordion-body">
+                        {% if presences %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Statut</th>
+                                            <th>Matière</th>
+                                            <th>Heure Début</th>
+                                            <th>Heure Fin</th>
+                                            <th>Motif</th>
+                                            <th>Justificatif</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for presence in presences %}
+                                            <tr>
+                                                <td>{{ presence.date|date:"d M Y" }}</td>
+                                                <td><span class="badge bg-{% if presence.statut == 'Présent' %}success{% elif presence.statut == 'Absent' %}danger{% elif presence.statut == 'Retard' %}warning{% else %}info{% endif %}">{{ presence.statut }}</span></td>
+                                                <td>{{ presence.matiere.nom|default:"Général" }}</td>
+                                                <td>{{ presence.heure_debut_cours|date:"H:i"|default:"N/A" }}</td>
+                                                <td>{{ presence.heure_fin_cours|date:"H:i"|default:"N/A" }}</td>
+                                                <td>{{ presence.motif_absence_retard|default:"-" }}</td>
+                                                <td>
+                                                    {% if presence.justificatif_fourni %}
+                                                        <i class="fas fa-check-circle text-success"></i> Oui
+                                                    {% else %}
+                                                        <i class="fas fa-times-circle text-danger"></i> Non
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">Aucune présence enregistrée pour cet élève {% if date_filtre %} à cette date{% endif %}.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="alert alert-info">Aucun élève trouvé dans cette classe pour le suivi des présences ou aucune présence enregistrée {% if date_filtre %} à cette date{% endif %}.</p>
+    {% endif %}
+{% endblock %}

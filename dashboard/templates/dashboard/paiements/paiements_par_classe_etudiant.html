@@ -1,0 +1,175 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Paiements Détaillés par Classe et Élève{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">
+        Suivi des Paiements par Classe et Élève
+        (Année Scolaire Active : <span class="text-primary">{{ annee_active.annee|default:"Non définie" }}</span>)
+    </h2>
+
+    {% if not annee_active %}
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Attention : Aucune année scolaire n'est marquée comme active. Les données peuvent être incomplètes.
+            Veuillez <a href="{% url 'liste_annees_scolaires' %}" class="alert-link">définir une année active</a>.
+        </div>
+    {% endif %}
+
+    {# Formulaire de filtre par classe et par statut de paiement #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Options de Filtrage</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                {# Filtre par Classe #}
+                <div class="col-md-4">
+                    <label for="classe_filter" class="form-label">Classe :</label>
+                    <select class="form-select" id="classe_filter" name="classe_filter_id">
+                        <option value="">-- Toutes les classes --</option>
+                        {% for classe in toutes_les_classes %}
+                            <option value="{{ classe.id }}" {% if selected_classe_id == classe.id %}selected{% endif %}>
+                                {{ classe.nom_classe }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {# Nouveau Filtre par Statut de Paiement #}
+                <div class="col-md-4">
+                    <label for="statut_filter" class="form-label">Statut du Paiement :</label>
+                    <select class="form-select" id="statut_filter" name="statut_filter">
+                        <option value="">-- Tous les statuts --</option>
+                        <option value="impayes_partiels" {% if selected_statut == 'impayes_partiels' %}selected{% endif %}>Impayés/Partiels</option>
+                        <option value="payes" {% if selected_statut == 'payes' %}selected{% endif %}>Payés</option>
+                    </select>
+                </div>
+
+                {# Boutons de Filtre et Réinitialisation #}
+                <div class="col-md-auto d-flex align-items-end"> {# Utilisez align-items-end pour aligner avec les champs au-dessus #}
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-2"></i>Filtrer</button>
+                    {% if selected_classe_id or selected_statut %}
+                        <a href="{% url 'liste_paiements_par_classe_etudiant' %}" class="btn btn-secondary ms-2"><i class="fas fa-redo me-2"></i>Réinitialiser</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if data_par_classe %}
+        {% for class_data in data_par_classe %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-school me-2"></i>Classe : {{ class_data.classe.nom_classe }}
+                    </h6>
+                    <span class="badge bg-secondary">
+                        {{ class_data.etudiants_data|length }} élève(s) avec paiements
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="accordion" id="accordionClass{{ class_data.classe.id }}">
+                        {% for student_data in class_data.etudiants_data %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingStudent{{ student_data.etudiant.id }}">
+                                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStudent{{ student_data.etudiant.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapseStudent{{ student_data.etudiant.id }}">
+                                        <div class="d-flex justify-content-between w-100 pe-3">
+                                            <span><i class="fas fa-user-graduate me-2"></i>{{ student_data.etudiant.prenom }} {{ student_data.etudiant.nom }}</span>
+                                            <div>
+                                                {% if student_data.paiements_impayes_partiels and not selected_statut == 'payes' %}
+                                                    <span class="badge bg-danger me-2"><i class="fas fa-exclamation-circle me-1"></i>Impayé/Partiel</span>
+                                                {% elif student_data.paiements_payes and not student_data.paiements_impayes_partiels and not selected_statut == 'impayes_partiels' %}
+                                                    <span class="badge bg-success me-2"><i class="fas fa-check-circle me-1"></i>Tout Payé</span>
+                                                {% endif %}
+                                                <small class="text-muted">Dû: {{ student_data.total_du|floatformat:0 }} FCFA | Payé: {{ student_data.total_paye|floatformat:0 }} FCFA</small>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="collapseStudent{{ student_data.etudiant.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="headingStudent{{ student_data.etudiant.id }}" data-bs-parent="#accordionClass{{ class_data.classe.id }}">
+                                    <div class="accordion-body">
+                                        <h6 class="text-secondary mt-2 mb-2"><i class="fas fa-dollar-sign me-1"></i>Détails des Paiements :</h6>
+                                        {% if student_data.paiements_payes or student_data.paiements_impayes_partiels %}
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Motif</th>
+                                                            <th>Montant Dû</th>
+                                                            <th>Montant Payé</th>
+                                                            <th>Statut</th>
+                                                            <th>Date Paiement</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {# Paiements impayés/partiels (affichés seulement si le filtre n'est pas 'payes') #}
+                                                        {% if not selected_statut == 'payes' %}
+                                                            {% for paiement in student_data.paiements_impayes_partiels %}
+                                                                <tr class="table-danger">
+                                                                    <td>{{ paiement.motif_paiement }}</td>
+                                                                    <td>{{ paiement.montant_du|floatformat:0 }} FCFA</td>
+                                                                    <td>{{ paiement.montant|floatformat:0 }} FCFA</td>
+                                                                    <td><span class="badge bg-{% if paiement.statut == 'Partiel' %}warning{% else %}danger{% endif %}">{{ paiement.statut }}</span></td>
+                                                                    <td>{{ paiement.date_paiement|date:"d M Y" }}</td>
+                                                                    <td>
+                                                                        <a href="{% url 'modifier_paiement' paiement.pk %}" class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Modifier/Compléter"><i class="fas fa-edit"></i></a>
+                                                                        <a href="{% url 'supprimer_paiement' paiement.pk %}" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Supprimer"><i class="fas fa-trash-alt"></i></a>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                        
+                                                        {# Paiements payés (affichés seulement si le filtre n'est pas 'impayes_partiels') #}
+                                                        {% if not selected_statut == 'impayes_partiels' %}
+                                                            {% for paiement in student_data.paiements_payes %}
+                                                                <tr class="table-success">
+                                                                    <td>{{ paiement.motif_paiement }}</td>
+                                                                    <td>{{ paiement.montant_du|floatformat:0 }} FCFA</td>
+                                                                    <td>{{ paiement.montant|floatformat:0 }} FCFA</td>
+                                                                    <td><span class="badge bg-success">{{ paiement.statut }}</span></td>
+                                                                    <td>{{ paiement.date_paiement|date:"d M Y" }}</td>
+                                                                    <td>
+                                                                        <a href="{% url 'modifier_paiement' paiement.pk %}" class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Modifier"><i class="fas fa-edit"></i></a>
+                                                                        <a href="{% url 'supprimer_paiement' paiement.pk %}" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Supprimer"><i class="fas fa-trash-alt"></i></a>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {% else %}
+                                            <p class="text-muted fst-italic">Aucun paiement enregistré pour cet élève.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            {% if selected_classe_id or selected_statut %}
+                Aucun paiement trouvé correspondant aux filtres appliqués dans l'année scolaire active.
+            {% else %}
+                Aucun paiement n'a été enregistré pour l'année scolaire active ou aucune classe avec des paiements.
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Confirmer Suppression Matière{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Confirmer la Suppression de la Matière</h2>
+    <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Êtes-vous sûr de vouloir supprimer la matière <strong>"{{ matiere.nom }}"</strong> ?
+        <p class="mt-2"><strong>Attention :</strong> Toutes les notes et les affectations de cette matière dans les programmes scolaires seront supprimées. Cette action est irréversible.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger me-2"><i class="fas fa-trash-alt me-2"></i>Confirmer la Suppression</button>
+        <a href="{% url 'liste_matieres' %}" class="btn btn-secondary"><i class="fas fa-times-circle me-2"></i>Annuler</a>
+    </form>
+{% endblock %}

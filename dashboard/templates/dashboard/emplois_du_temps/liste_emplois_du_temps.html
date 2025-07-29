@@ -1,0 +1,95 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Emplois du Temps{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Emplois du Temps par Classe (Année : {{ annee_active.annee }})</h2>
+    <a href="{% url 'creer_emploi_du_temps' %}" class="btn btn-primary mb-3"><i class="fas fa-plus-circle me-2"></i>Ajouter un Emploi du Temps</a>
+
+    <div class="mb-3">
+        <form method="GET" action="{% url 'liste_emplois_du_temps' %}" class="d-flex align-items-center">
+            <label for="classe_filter" class="form-label me-2 mb-0">Filtrer par Classe :</label>
+            <select name="classe_id" id="classe_filter" class="form-select me-3" style="max-width: 250px;">
+                <option value="">Toutes les classes</option>
+                {% for c in toutes_les_classes %}
+                    <option value="{{ c.pk }}" {% if c.pk == classe_selectionnee.pk %}selected{% endif %}>{{ c.nom_classe }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-info"><i class="fas fa-filter me-1"></i>Filtrer</button>
+            {% if classe_selectionnee %}
+                <a href="{% url 'liste_emplois_du_temps' %}" class="btn btn-outline-secondary ms-2"><i class="fas fa-times me-1"></i>Effacer Filtre</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if emplois_du_temps_par_classe %}
+        <div class="accordion" id="accordionEmploiDuTemps">
+            {% for classe, edt_items in emplois_du_temps_par_classe.items %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ classe.pk }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ classe.pk }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ classe.pk }}">
+                        Emploi du Temps pour {{ classe.nom_classe }}
+                    </button>
+                </h2>
+                <div id="collapse{{ classe.pk }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ classe.pk }}" data-bs-parent="#accordionEmploiDuTemps">
+                    <div class="accordion-body">
+                        {% if edt_items %}
+                            <div class="text-end mb-3">
+                                <a href="{% url 'modifier_emploi_du_temps_classe' classe.pk %}" class="btn btn-warning btn-sm me-1"><i class="fas fa-edit me-1"></i>Modifier l'EDT de la classe</a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm text-center">
+                                    <thead>
+                                        <tr>
+                                            <th>Heure</th>
+                                            <th>Lundi</th>
+                                            <th>Mardi</th>
+                                            <th>Mercredi</th>
+                                            <th>Jeudi</th>
+                                            <th>Vendredi</th>
+                                            <th>Samedi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for heure in heures_disponibles %}
+                                            <tr>
+                                                <th scope="row">{{ heure }}</th>
+                                                {% for jour in jours_semaine %}
+                                                    <td>
+                                                        {% with edt_item=edt_items|get_edt_item:jour:heure %}
+                                                            {% if edt_item %}
+                                                                <strong>{{ edt_item.matiere.nom }}</strong><br>
+                                                                <small>{{ edt_item.enseignant.prenom }} {{ edt_item.enseignant.nom }}</small>
+                                                            {% else %}
+                                                                -
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="alert alert-info">Aucun emploi du temps défini pour cette classe.</p>
+                            <a href="{% url 'creer_emploi_du_temps_pour_classe' classe.pk %}" class="btn btn-success"><i class="fas fa-plus-circle me-2"></i>Créer l'EDT pour cette classe</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="alert alert-info">Aucun emploi du temps n'a été créé pour l'année scolaire active. <a href="{% url 'creer_emploi_du_temps' %}" class="alert-link">Créez le premier !</a></p>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

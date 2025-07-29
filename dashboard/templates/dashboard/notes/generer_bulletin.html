@@ -1,0 +1,29 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Générer un Bulletin{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Générer un Bulletin</h2>
+
+    <form method="get" action="{% url 'afficher_bulletin' %}" class="card p-4">
+        <div class="mb-3">
+            <label for="id_etudiant" class="form-label">Élève :</label>
+            {{ form.etudiant }}
+            {% for error in form.etudiant.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="id_trimestre" class="form-label">Trimestre :</label>
+            {{ form.trimestre }}
+            {% for error in form.trimestre.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="mb-3">
+            <label for="id_annee_scolaire" class="form-label">Année Scolaire :</label>
+            {{ form.annee_scolaire }}
+            {% for error in form.annee_scolaire.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary me-2"><i class="fas fa-file-alt me-2"></i>Afficher le Bulletin</button>
+            <a href="{% url 'dashboard_accueil' %}" class="btn btn-secondary"><i class="fas fa-times-circle me-2"></i>Annuler</a>
+        </div>
+    </form>
+{% endblock %}

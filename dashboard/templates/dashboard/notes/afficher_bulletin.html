@@ -1,0 +1,99 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Bulletin de {{ etudiant.prenom }} {{ etudiant.nom }}{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Bulletin de Notes</h2>
+
+    <div class="card mb-4 p-4">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Élève :</strong> {{ etudiant.prenom }} {{ etudiant.nom }}</p>
+                <p><strong>Classe :</strong> {{ etudiant.classe.nom_classe|default:"N/A" }}</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p><strong>Année Scolaire :</strong> {{ annee_scolaire.annee }}</p>
+                <p><strong>Trimestre :</strong> {{ trimestre }}</p>
+                <p><strong>Date d'impression :</strong> {{ "now"|date:"d F Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Détail des Matières</h3>
+    {% if bulletin_data %}
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Matière</th>
+                        <th>Coefficient</th>
+                        <th>Moyenne (sur 20)</th>
+                        <th>Appréciation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for matiere_data in bulletin_data.notes_par_matiere %}
+                        <tr>
+                            <td>{{ matiere_data.matiere.nom }}</td>
+                            <td>{{ matiere_data.coefficient }}</td>
+                            <td>
+                                {% if matiere_data.moyenne is not None %}
+                                    <strong>{{ matiere_data.moyenne|floatformat:2 }}</strong>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if matiere_data.moyenne is not None %}
+                                    {% if matiere_data.moyenne >= 16 %}Très Bien
+                                    {% elif matiere_data.moyenne >= 14 %}Bien
+                                    {% elif matiere_data.moyenne >= 12 %}Assez Bien
+                                    {% elif matiere_data.moyenne >= 10 %}Passable
+                                    {% else %}Insuffisant{% endif %}
+                                {% else %}
+                                    Pas de moyenne
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-dark">
+                        <th colspan="2">Moyenne Générale</th>
+                        <th>
+                            {% if bulletin_data.moyenne_generale is not None %}
+                                <strong>{{ bulletin_data.moyenne_generale|floatformat:2 }}</strong>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </th>
+                        <th>
+                            {% if bulletin_data.moyenne_generale is not None %}
+                                {% if bulletin_data.moyenne_generale >= 16 %}Excellent travail
+                                {% elif bulletin_data.moyenne_generale >= 14 %}Bon travail
+                                {% elif bulletin_data.moyenne_generale >= 12 %}Travail satisfaisant
+                                {% elif bulletin_data.moyenne_generale >= 10 %}Encouragements
+                                {% else %}Des efforts sont nécessaires{% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="card p-3 bg-light">
+            <h4>Observations Générales</h4>
+            <p>{{ bulletin_data.observations|default:"Aucune observation pour ce trimestre." }}</p>
+        </div>
+
+    {% else %}
+        <p class="alert alert-warning">Aucune donnée de bulletin disponible pour l'élève, le trimestre et l'année scolaire sélectionnés. Veuillez vérifier que des notes ont été saisies.</p>
+    {% endif %}
+
+    <div class="mt-4 text-end">
+        <a href="{% url 'generer_bulletin' %}" class="btn btn-secondary me-2"><i class="fas fa-arrow-left me-2"></i>Retour</a>
+        <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print me-2"></i>Imprimer le Bulletin</button>
+    </div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Confirmer la Suppression de Note{% endblock %}
+
+{% block content %}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Confirmer la Suppression de la Note</h1>
+    </div>
+
+    {# Affichage des messages Django #}
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Supprimer la note pour {{ etudiant.prenom }} {{ etudiant.nom }}</h6>
+        </div>
+        <div class="card-body">
+            <p class="lead text-danger">
+                Êtes-vous sûr de vouloir supprimer la note suivante :
+            </p>
+            <ul>
+                <li><strong>Élève :</strong> {{ etudiant.prenom }} {{ etudiant.nom }}</li>
+                <li><strong>Matière :</strong> {{ note.matiere.nom|default:"N/A" }}</li>
+                <li><strong>Période d'Évaluation :</strong> {{ note.periode_evaluation|default:"N/A" }}</li>
+                <li><strong>Note :</strong> {{ note.valeur|floatformat:2|default:"N/A" }}/20</li>
+                <li><strong>Année Scolaire :</strong> {{ note.annee_scolaire.annee|default:"N/A" }}</li>
+            </ul>
+            <p class="text-muted">
+                Cette action est **IRRÉVERSIBLE** et cette note sera définitivement supprimée de l'historique de l'élève.
+            </p>
+
+            <form method="post" action="{% url 'supprimer_note' note.pk %}" class="mt-4">
+                {% csrf_token %} {# Très important pour la sécurité Django #}
+                <button type="submit" class="btn btn-danger me-2"><i class="fas fa-trash-alt me-1"></i>Oui, Supprimer la Note</button>
+                {# Le bouton d'annulation redirige vers la page de détails de l'élève #}
+                <a href="{% url 'detail_etudiant' etudiant.pk %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Annuler et Retour</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

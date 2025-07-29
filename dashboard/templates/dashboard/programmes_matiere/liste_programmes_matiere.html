@@ -1,0 +1,49 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Programmes Matières{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Programmes Matières par Classe (Année : {{ annee_active.annee }})</h2>
+    <a href="{% url 'creer_programme_matiere' %}" class="btn btn-primary mb-3"><i class="fas fa-plus-circle me-2"></i>Ajouter un Programme</a>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Classe</th>
+                    <th>Matière</th>
+                    <th>Enseignant</th>
+                    <th>Coefficient</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for programme in programmes %}
+                    <tr>
+                        <td>{{ programme.classe.nom_classe }} ({{ programme.classe.annee_scolaire.annee }})</td>
+                        <td>{{ programme.matiere.nom }}</td>
+                        <td>{{ programme.enseignant|default:"Non assigné" }}</td>
+                        <td>{{ programme.coefficient }}</td>
+                        <td>
+                            <a href="{% url 'modifier_programme_matiere' programme.pk %}" class="btn btn-warning btn-sm me-1" data-bs-toggle="tooltip" title="Modifier"><i class="fas fa-edit"></i></a>
+                            <a href="{% url 'supprimer_programme_matiere' programme.pk %}" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" title="Supprimer"><i class="fas fa-trash-alt"></i></a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">Aucun programme matière défini pour l'année active.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

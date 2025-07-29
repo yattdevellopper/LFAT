@@ -1,0 +1,18 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Confirmer Suppression Type Frais{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Confirmer la Suppression du Type de Frais</h2>
+    <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Êtes-vous sûr de vouloir supprimer le type de frais <strong>"{{ type_frais.nom }}"</strong> (Montant : {{ type_frais.montant_standard|floatformat:2 }} XOF) ?
+        <p class="mt-2"><strong>Attention :</strong> La suppression de ce type de frais n'annulera pas les paiements déjà enregistrés sous ce motif, mais il ne pourra plus être utilisé pour de nouveaux paiements.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger me-2"><i class="fas fa-trash-alt me-2"></i>Confirmer la Suppression</button>
+        <a href="{% url 'liste_types_frais' %}" class="btn btn-secondary"><i class="fas fa-times-circle me-2"></i>Annuler</a>
+    </form>
+{% endblock %}

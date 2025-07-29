@@ -1,0 +1,18 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Confirmer Suppression Paiement{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Confirmer la Suppression du Paiement</h2>
+    <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Êtes-vous sûr de vouloir supprimer le paiement de <strong>{{ paiement.montant_paye|floatformat:2 }} XOF</strong> (dû : {{ paiement.montant_du|floatformat:2 }} XOF) pour <strong>{{ paiement.etudiant.prenom }} {{ paiement.etudiant.nom }}</strong> (Motif: {{ paiement.motif_paiement }})?
+        <p class="mt-2"><strong>Attention :</strong> Cette action est irréversible et modifiera le statut de paiement de l'élève.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger me-2"><i class="fas fa-trash-alt me-2"></i>Confirmer la Suppression</button>
+        <a href="{% url 'liste_paiements_impayes' %}" class="btn btn-secondary"><i class="fas fa-times-circle me-2"></i>Annuler</a>
+    </form>
+{% endblock %}

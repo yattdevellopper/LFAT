@@ -1,0 +1,111 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter une Note{% endblock %}
+
+{% block content %}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Ajouter une Note</h1>
+    </div>
+
+    {# Affichage des messages Django #}
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Formulaire d'ajout de note pour {{ etudiant.prenom }} {{ etudiant.nom }}</h6>
+        </div>
+        <div class="card-body">
+            {# Formulaire d'ajout de note #}
+            <form method="post" action="{% url 'ajouter_note' etudiant.pk %}">
+                {% csrf_token %} {# Très important pour la sécurité Django #}
+
+                {# Affichage des erreurs globales du formulaire #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Rendu manuel des champs pour un meilleur contrôle du style Bootstrap #}
+                <div class="row">
+                    {# Champ Matière #}
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.matiere.id_for_label }}" class="form-label">Matière</label>
+                        {{ form.matiere }}
+                        {% if form.matiere.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.matiere.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Champ Période d'Évaluation #}
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.periode_evaluation.id_for_label }}" class="form-label">Période d'Évaluation</label>
+                        {{ form.periode_evaluation }}
+                        {% if form.periode_evaluation.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.periode_evaluation.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    {# Champ Valeur (la note) #}
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.valeur.id_for_label }}" class="form-label">Note (sur 20)</label>
+                        {{ form.valeur }}
+                        {% if form.valeur.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.valeur.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Champ Année Scolaire (peut être caché ou pré-rempli par la vue) #}
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.annee_scolaire.id_for_label }}" class="form-label">Année Scolaire</label>
+                        {{ form.annee_scolaire }}
+                        {% if form.annee_scolaire.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.annee_scolaire.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Champ caché pour l'étudiant, si géré dans la vue #}
+                {% if form.etudiant %}
+                    {{ form.etudiant }} {# Cela rendra le champ caché s'il est configuré comme tel #}
+                {% endif %}
+
+                {# Boutons d'action #}
+                <div class="d-flex justify-content-start mt-4">
+                    <button type="submit" class="btn btn-success me-2"><i class="fas fa-save me-1"></i>Enregistrer la Note</button>
+                    <a href="{% url 'detail_etudiant' etudiant.pk %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Annuler et Retour</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
