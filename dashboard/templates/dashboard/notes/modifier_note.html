@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier Note - {{ note.etudiant.prenom }} {{ note.etudiant.nom }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                        0 4px 6px -2 rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+<div class="container mx-auto p-4 sm:p-8">
+    <div class="max-w-xl mx-auto bg-white rounded-xl card-shadow overflow-hidden">
+        
+        <!-- En-tête -->
+        <div class="p-6 sm:p-8 border-b border-gray-200 bg-indigo-600 text-white">
+            <h1 class="text-2xl font-bold">Modification de la Note</h1>
+            <p class="text-sm opacity-90 mt-1">
+                Élève : <span class="font-semibold">{{ note.etudiant.prenom }} {{ note.etudiant.nom }}</span> | 
+                Matière : <span class="font-semibold">{{ note.matiere.nom }}</span>
+            </p>
+            <p class="text-xs mt-2">
+                Note actuelle : <span class="font-bold text-yellow-300">{{ note.valeur }}</span> (Période : {{ note.periode_evaluation }})
+            </p>
+        </div>
+
+        <!-- Messages Django -->
+        {% if messages %}
+        <div class="p-4">
+            {% for message in messages %}
+                <div class="rounded-lg p-3 text-sm {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %} mb-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Formulaire -->
+        <form method="POST" class="p-6 sm:p-8">
+            {% csrf_token %}
+            <div class="space-y-6">
+                
+                <!-- Valeur de la Note -->
+                <div>
+                    <label for="valeur" class="block text-sm font-medium text-gray-700 mb-1">
+                        Nouvelle Note (sur 20)
+                    </label>
+                    <input type="number" 
+                           id="valeur" 
+                           name="valeur" 
+                           step="0.01" min="0" max="20" 
+                           required 
+                           value="{{ note.valeur|floatformat:2 }}"
+                           placeholder="Ex: 15.50"
+                           class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border">
+                </div>
+
+                <!-- Type d'Évaluation -->
+                <div>
+                    <label for="type_evaluation" class="block text-sm font-medium text-gray-700 mb-1">
+                        Type d'Évaluation
+                    </label>
+                    <input type="text" 
+                           id="type_evaluation" 
+                           name="type_evaluation" 
+                           maxlength="50" required 
+                           value="{{ note.type_evaluation|default:'Interrogation' }}"
+                           placeholder="Ex: Devoir Maison, Composition"
+                           class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border">
+                </div>
+
+                <!-- Date d'Évaluation -->
+                <div>
+                    <label for="date_evaluation" class="block text-sm font-medium text-gray-700 mb-1">
+                        Date d'Évaluation
+                    </label>
+                    <input type="date" 
+                           id="date_evaluation" 
+                           name="date_evaluation" 
+                           required 
+                           value="{{ note.date_evaluation|date:'Y-m-d' }}"
+                           class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border">
+                </div>
+            </div>
+
+            <!-- Boutons -->
+            <div class="mt-8 flex justify-end space-x-4">
+                <!-- Annuler -->
+                <a href="{% url 'liste_notes_par_classe_matiere' %}" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    Annuler
+                </a>
+
+                <!-- Enregistrer -->
+                <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    Enregistrer la Modification
+                </button>
+            </div>
+
+            <p class="text-xs text-gray-500 mt-6 text-center">
+                Cette action mettra à jour la note pour la période "{{ note.periode_evaluation }}" et l'année scolaire en cours.
+            </p>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>

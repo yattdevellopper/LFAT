@@ -1,0 +1,40 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Paramètres de l'École{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white p-4 d-flex align-items-center">
+            <i class="fas fa-school fa-lg me-2"></i>
+            <h4 class="mb-0">Configuration de l'Établissement</h4>
+        </div>
+        <div class="card-body p-5">
+            <form method="post" enctype="multipart/form-data" class="row g-4">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <div class="col-12 mt-4 border-top pt-3">
+                    <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                        <i class="fas fa-save me-2"></i> Enregistrer
+                    </button>
+                    <a href="{% url 'dashboard_accueil' %}" class="btn btn-secondary btn-lg ms-2 shadow-sm">
+                        <i class="fas fa-arrow-left me-2"></i> Retour
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

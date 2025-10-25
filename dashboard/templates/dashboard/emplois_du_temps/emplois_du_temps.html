@@ -1,0 +1,142 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% load dashboard_filters %} {# Ici on charge notre filtre get_item #}
+
+{% block title %}Emplois du Temps{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 text-primary">
+    <i class="fas fa-calendar-alt me-2"></i> Emplois du Temps (Année : {{ annee_active.annee|default:"N/A" }})
+</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{% url 'creer_emploi_du_temps' %}" class="btn btn-success">
+        <i class="fas fa-plus-circle me-2"></i>Ajouter un Bloc de Cours
+    </a>
+
+    {# Formulaire de filtre #}
+    <form method="GET" action="{% url 'liste_emplois_du_temps' %}" class="d-flex align-items-center bg-light p-2 rounded shadow-sm">
+        <label for="classe_filter" class="form-label me-2 mb-0 fw-bold text-secondary">Filtrer :</label>
+        <select name="classe_id" id="classe_filter" class="form-select form-select-sm me-2" style="max-width: 200px;">
+            <option value="">Toutes les classes</option>
+            {% for c in toutes_les_classes %}
+                <option value="{{ c.pk }}" {% if classe_selectionnee and c.pk == classe_selectionnee.pk %}selected{% endif %}>
+                    {{ c.nom_classe }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-info btn-sm">
+            <i class="fas fa-search me-1"></i>
+        </button>
+        {% if classe_selectionnee %}
+            <a href="{% url 'liste_emplois_du_temps' %}" class="btn btn-outline-secondary btn-sm ms-2" data-bs-toggle="tooltip" title="Effacer Filtre">
+                <i class="fas fa-times"></i>
+            </a>
+        {% endif %}
+    </form>
+</div>
+
+{% if not annee_active %}
+    <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i><strong>Attention :</strong> Aucune année scolaire active n'est définie.
+    </div>
+{% elif emplois_du_temps_par_classe %}
+    <div class="accordion" id="accordionEmploiDuTemps">
+        {% for classe, edt_dict in emplois_du_temps_par_classe.items %}
+        <div class="accordion-item shadow-sm mb-3">
+            <h2 class="accordion-header" id="heading{{ classe.pk }}">
+                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-bold bg-light text-dark"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapse{{ classe.pk }}"
+                        aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                        aria-controls="collapse{{ classe.pk }}">
+                    <i class="fas fa-chalkboard me-2 text-primary"></i> Emploi du Temps - {{ classe.nom_classe }}
+                </button>
+            </h2>
+            <div id="collapse{{ classe.pk }}"
+                 class="accordion-collapse collapse {% if forloop.first or classe_selectionnee %}show{% endif %}"
+                 aria-labelledby="heading{{ classe.pk }}"
+                 data-bs-parent="#accordionEmploiDuTemps">
+                <div class="accordion-body p-3">
+
+                    {% if edt_dict %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-sm text-center align-middle">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Heure</th>
+                                        {% for jour in jours_semaine %}
+                                            <th>{{ jour }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for heure_str in heures_disponibles %}
+                                        <tr>
+                                            <th class="table-secondary">{{ heure_str }}</th>
+                                            {% for jour in jours_semaine %}
+                                                <td style="min-width: 150px;">
+                                                    {% with bloc=edt_dict|get_item:jour|get_item:heure_str %}
+                                                        {% if bloc %}
+                                                            <div class="p-1">
+                                                                <strong class="text-dark">{{ bloc.matiere.nom }}</strong><br>
+                                                                <small class="text-secondary">{{ bloc.enseignant.prenom }} {{ bloc.enseignant.nom }}</small>
+                                                                <br>
+                                                                <a href="{% url 'modifier_emploi_du_temps' bloc.pk %}" 
+                                                                   class="btn btn-warning btn-sm mt-1"
+                                                                   data-bs-toggle="tooltip" title="Modifier ce bloc">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                            </div>
+                                                        {% else %}
+                                                            <span class="text-muted small">- Libre -</span>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-end mt-3">
+                            <a href="{% url 'creer_emploi_du_temps_pour_classe' classe.pk %}" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-2"></i>Ajouter un nouveau bloc pour {{ classe.nom_classe }}
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="alert alert-info text-center">Aucun emploi du temps défini pour cette classe pour l'année active.</p>
+                        <div class="text-center">
+                            <a href="{% url 'creer_emploi_du_temps_pour_classe' classe.pk %}" class="btn btn-success">
+                                <i class="fas fa-plus-circle me-2"></i>Créer l'EDT pour {{ classe.nom_classe }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="alert alert-info p-4">
+        <i class="fas fa-info-circle me-2"></i>Aucun emploi du temps n'a encore été créé pour l'année scolaire active.
+        <a href="{% url 'creer_emploi_du_temps' %}" class="alert-link fw-bold">Commencez la création ici.</a>
+    </p>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+
+    {% if classe_selectionnee %}
+    const collapseElement = document.getElementById('collapse{{ classe_selectionnee.pk }}');
+    if (collapseElement) new bootstrap.Collapse(collapseElement, { toggle: false }).show();
+    {% endif %}
+});
+</script>
+{% endblock %}

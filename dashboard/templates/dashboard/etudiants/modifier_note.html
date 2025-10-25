@@ -4,107 +4,92 @@
 {% block title %}Modifier Note : {{ note.matiere.nom }} ({{ etudiant.prenom }} {{ etudiant.nom }}){% endblock %}
 
 {% block content %}
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Modifier la Note</h1>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Modifier la Note</h1>
+</div>
+
+{# Messages Django #}
+{% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
     </div>
+{% endif %}
 
-    {# Affichage des messages Django #}
-    {% if messages %}
-        <div class="mb-4">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Modifier la note pour {{ etudiant.prenom }} {{ etudiant.nom }}</h6>
-        </div>
-        <div class="card-body">
-            {# Formulaire de modification de note #}
-            <form method="post" action="{% url 'modifier_note' note.pk %}">
-                {% csrf_token %} {# Très important pour la sécurité Django #}
-
-                {# Affichage des erreurs globales du formulaire #}
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for error in form.non_field_errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-
-                <div class="row">
-                    {# Champ Matière #}
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.matiere.id_for_label }}" class="form-label">Matière</label>
-                        {{ form.matiere }}
-                        {% if form.matiere.errors %}
-                            <div class="text-danger small">
-                                {% for error in form.matiere.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    {# Champ Période d'Évaluation #}
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.periode_evaluation.id_for_label }}" class="form-label">Période d'Évaluation</label>
-                        {{ form.periode_evaluation }}
-                        {% if form.periode_evaluation.errors %}
-                            <div class="text-danger small">
-                                {% for error in form.periode_evaluation.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="row">
-                    {# Champ Valeur (la note) #}
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.valeur.id_for_label }}" class="form-label">Note (sur 20)</label>
-                        {{ form.valeur }}
-                        {% if form.valeur.errors %}
-                            <div class="text-danger small">
-                                {% for error in form.valeur.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    {# Champ Année Scolaire #}
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.annee_scolaire.id_for_label }}" class="form-label">Année Scolaire</label>
-                        {{ form.annee_scolaire }}
-                        {% if form.annee_scolaire.errors %}
-                            <div class="text-danger small">
-                                {% for error in form.annee_scolaire.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                {# Champ caché pour l'étudiant, si géré dans la vue (le formset peut le rendre aussi) #}
-                {% if form.etudiant %}
-                    {{ form.etudiant }}
-                {% endif %}
-
-                {# Boutons d'action #}
-                <div class="d-flex justify-content-start mt-4">
-                    <button type="submit" class="btn btn-success me-2"><i class="fas fa-save me-1"></i>Enregistrer les Modifications</button>
-                    <a href="{% url 'detail_etudiant' etudiant.pk %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Annuler et Retour</a>
-                </div>
-            </form>
-        </div>
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            Modifier la note pour {{ etudiant.prenom }} {{ etudiant.nom }} ({{ etudiant.ecole.nom_etablissement }})
+        </h6>
     </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'modifier_note' note.pk %}">
+            {% csrf_token %}
+
+            {# Erreurs globales #}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-3">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="row g-3">
+                {# Matière #}
+                <div class="col-md-6">
+                    <label for="{{ form.matiere.id_for_label }}" class="form-label">Matière</label>
+                    {{ form.matiere|add_class:"form-select" }}
+                    {% for error in form.matiere.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {# Période d'Évaluation #}
+                <div class="col-md-6">
+                    <label for="{{ form.periode_evaluation.id_for_label }}" class="form-label">Période d'Évaluation</label>
+                    {{ form.periode_evaluation|add_class:"form-select" }}
+                    {% for error in form.periode_evaluation.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {# Valeur (Note) #}
+                <div class="col-md-6">
+                    <label for="{{ form.valeur.id_for_label }}" class="form-label">Note (sur 20)</label>
+                    {{ form.valeur|add_class:"form-control" }}
+                    {% for error in form.valeur.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {# Année Scolaire #}
+                <div class="col-md-6">
+                    <label for="{{ form.annee_scolaire.id_for_label }}" class="form-label">Année Scolaire</label>
+                    {{ form.annee_scolaire|add_class:"form-select" }}
+                    {% for error in form.annee_scolaire.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {# Étudiant (caché) #}
+                {% if form.etudiant %}{{ form.etudiant }}{% endif %}
+            </div>
+
+            {# Boutons d'action #}
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-1"></i> Enregistrer
+                </button>
+                <a href="{% url 'detail_etudiant' etudiant.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

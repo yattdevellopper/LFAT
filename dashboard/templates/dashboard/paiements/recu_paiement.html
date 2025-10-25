@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu de paiement - {{ etudiant.nom }} {{ etudiant.prenom }}</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* Bleu foncé/Anthracite */
+            --secondary-color: #f39c12; /* Or/Orange pour l'accent */
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+        .recu {
+            width: 85%;
+            max-width: 700px;
+            margin: 30px auto;
+            border: 1px solid #ddd;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 8px solid var(--primary-color); /* Bande de couleur en haut */
+        }
+        .header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .header .logo {
+            width: 100px; /* Taille plus appropriée pour le logo */
+            height: 100px;
+            object-fit: contain;
+            margin-right: 20px;
+        }
+        .header .infos {
+            text-align: right;
+            flex-grow: 1;
+        }
+        .header .infos h2 {
+            margin: 0;
+            font-size: 26px;
+            color: var(--primary-color);
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .header .infos p {
+            margin: 3px 0;
+            font-size: 12px;
+            color: #555;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            padding: 10px 0;
+            margin-bottom: 25px;
+            text-decoration: underline var(--secondary-color);
+            text-underline-offset: 5px;
+        }
+        
+        .student-details {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: var(--light-bg);
+        }
+        .student-details h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .details-grid div {
+            padding: 5px 0;
+        }
+        .details-grid span {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-left: 5px;
+        }
+        
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .payment-table th, .payment-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .payment-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+        .payment-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .financial-summary {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .financial-summary .amount-row {
+            display: flex;
+            justify-content: space-between;
+            width: 48%;
+            padding: 5px 0;
+        }
+        .financial-summary .label {
+            font-weight: 300;
+        }
+        .financial-summary .amount-value {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .financial-summary .paid {
+            color: var(--secondary-color); /* Montant payé en couleur accent */
+            font-size: 22px;
+            font-weight: 900;
+        }
+        
+        .signature {
+            margin-top: 50px;
+            text-align: right;
+            padding-right: 30px;
+        }
+        .signature p {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        .signature strong {
+            display: block;
+            margin-top: 5px;
+        }
+        .signature .line {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #888;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+            text-align: center;
+            font-size: 11px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="recu">
+        <div class="header">
+            <img src="{{ ecole.logo.url }}" alt="Logo de l'école" class="logo">
+            <div class="infos">
+                <h2>{{ ecole.nom_etablissement }}</h2>
+                <p>{{ ecole.adresse_etablissement }}</p>
+                <p>Tél : {{ ecole.telephone }} | Email : {{ ecole.email_contact }}</p>
+            </div>
+        </div>
+
+        <div class="title">Reçu de Paiement N° {{ paiement.recu_numero|default:"[N/A]" }}</div>
+
+        <!-- Détails de l'élève -->
+        <div class="student-details">
+            <h4>Information de l'Élève</h4>
+            <div class="details-grid">
+                <div>Nom & Prénom: <span>{{ etudiant.nom }} {{ etudiant.prenom }}</span></div>
+                <div>Classe: <span>{{ etudiant.classe.nom_classe|default:"Non assigné" }}</span></div>
+            </div>
+        </div>
+
+        <!-- Tableau des détails de la transaction -->
+        <table class="payment-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Détail de la Transaction</th>
+                    <th>Valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Date du paiement :</td>
+                    <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                </tr>
+                <tr>
+                    <td>Motif du paiement :</td>
+                    <td>{{ paiement.motif_paiement|default:"Frais de scolarité" }}</td>
+                </tr>
+                <tr>
+                    <td>Mode de paiement :</td>
+                    <td>{{ paiement.mode_paiement|default:"Espèces" }}</td>
+                </tr>
+                <tr>
+                    <td>Statut :</td>
+                    <td><strong style="color: var(--secondary-color);">{{ paiement.statut|upper }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Résumé financier mis en évidence -->
+        <div class="financial-summary">
+            <div style="width: 100%; display: flex; justify-content: space-between;">
+                <div>
+                    <div class="label">Total Global Dû:</div>
+                    <div class="amount-value">{{ paiement.montant_du|floatformat:0|default:"0" }} FCFA</div>
+                </div>
+                <div>
+                    <div class="label">Montant Payé:</div>
+                    <div class="amount-value paid">{{ paiement.montant|floatformat:0|default:"0" }} FCFA</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="signature">
+            <p>Fait à **{{ ecole.ville|default:"[Ville]" }}**, le **{{ paiement.date_paiement|date:"d M Y" }}**</p>
+            <strong>Signature du Caissier / Responsable</strong>
+            <span class="line">______________________</span>
+        </div>
+
+        <div class="footer">
+            <p>Ce reçu est une preuve de paiement. Veuillez le conserver. Merci pour votre collaboration.</p>
+            <p><em>Généré par le système de gestion scolaire de {{ ecole.nom_etablissement }}.</em></p>
+        </div>
+    </div>
+</body>
+</html>

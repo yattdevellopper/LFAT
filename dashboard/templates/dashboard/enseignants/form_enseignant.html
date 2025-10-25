@@ -1,27 +1,145 @@
 {% extends 'dashboard/base.html' %}
+{% load static %}
 
 {% block title %}{{ action }} un Enseignant{% endblock %}
 
 {% block content %}
-    <h2 class="mb-4">{{ action }} un Enseignant</h2>
+    <div class="border-bottom mb-5 pb-2">
+        <h2 class="mb-0 text-primary">
+            <i class="fas fa-chalkboard-teacher me-2"></i> {{ action }} un Enseignant
+        </h2>
+        <p class="text-muted">Remplissez les informations de base et la spécialité de l'enseignant.</p>
+    </div>
 
-    <form method="post" class="card p-4">
+    {# Utilisation de la classe row pour la disposition #}
+    <form method="post" enctype="multipart/form-data" class="row g-4">
         {% csrf_token %}
-        {% for field in form %}
-            <div class="mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}
-                    <small class="form-text text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                    <div class="text-danger small">{{ error }}</div>
-                {% endfor %}
+
+        {# Colonne Principale #}
+        <div class="col-lg-12">
+            
+            {# CARTE 1: INFOS PERSONELLES ET CONTACT #}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light fw-bold text-dark">
+                    <i class="fas fa-id-card me-2"></i> Informations Personnelles et de Contact
+                </div>
+                <div class="card-body row g-3">
+                    
+                    {# Champ Nom #}
+                    <div class="col-md-6">
+                        <label for="{{ form.nom.id_for_label }}" class="form-label">Nom</label>
+                        {{ form.nom }}
+                        {% for error in form.nom.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    {# Champ Prénom #}
+                    <div class="col-md-6">
+                        <label for="{{ form.prenom.id_for_label }}" class="form-label">Prénom(s)</label>
+                        {{ form.prenom }}
+                        {% for error in form.prenom.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    {# Champ Contact #}
+                    <div class="col-md-6 border-top pt-3">
+                        <label for="{{ form.contact.id_for_label }}" class="form-label">Téléphone</label>
+                        {{ form.contact }}
+                        {% for error in form.contact.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    {# Champ Email #}
+                    <div class="col-md-6 border-top pt-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    {# Afficher les erreurs non liées à un champ spécifique #}
+                    {% if form.non_field_errors %}
+                        <div class="col-12">
+                            <div class="alert alert-danger" role="alert">
+                                <strong>Erreurs de formulaire:</strong>
+                                <ul>
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
             </div>
-        {% endfor %}
-        <div class="mt-4">
-            <button type="submit" class="btn btn-success me-2"><i class="fas fa-save me-2"></i>Enregistrer</button>
-            <a href="{% url 'liste_enseignants' %}" class="btn btn-secondary"><i class="fas fa-times-circle me-2"></i>Annuler</a>
+
+            {# CARTE 2: INFOS PROFESSIONNELLES (Specialité) #}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white fw-bold">
+                    <i class="fas fa-briefcase me-2"></i> Spécialité et Affectation
+                </div>
+                <div class="card-body row g-3">
+                    
+                    {# Champ Specialité (Anciennement Matière Principale) #}
+                    <div class="col-md-6">
+                        <label for="{{ form.specialite.id_for_label }}" class="form-label">Spécialité / Matière</label>
+                        {{ form.specialite }}
+                        <small class="form-text text-muted">La matière principale enseignée par ce professeur.</small>
+                        {% for error in form.specialite.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    {# Champ vide ou autre champ professionnel si vous en ajoutez plus tard #}
+                    <div class="col-md-6">
+                        {# Espace pour un futur champ (ex: Statut ou ID) #}
+                        <div class="text-muted small mt-4 pt-2">
+                            *D'autres champs professionnels peuvent être ajoutés ici si nécessaire (ex: Statut, ID Enseignant, etc.)
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            {# Rendre les champs cachés #}
+            {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+            {% endfor %}
+            
+        </div>
+
+        {# Boutons d'action #}
+        <div class="col-12 mt-4 pt-3 border-top">
+            <button type="submit" class="btn btn-success btn-lg me-3"><i class="fas fa-save me-2"></i>Enregistrer l'Enseignant</button>
+            <a href="{% url 'liste_enseignants' %}" class="btn btn-secondary btn-lg"><i class="fas fa-times-circle me-2"></i>Annuler</a>
         </div>
     </form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Ajout des classes Bootstrap aux widgets Django par défaut si non spécifiées
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cibler les champs qui n'ont pas déjà une classe form-select
+        const selectFields = document.querySelectorAll('select:not([class*="form-select"])');
+        selectFields.forEach(select => {
+            select.classList.add('form-select');
+        });
+
+        // Cibler les champs qui n'ont pas déjà une classe form-control
+        // Attention: les champs de type file (pour la photo) ne doivent pas avoir form-control par défaut
+        const inputFields = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]):not([class*="form-control"])');
+        inputFields.forEach(input => {
+            input.classList.add('form-control');
+        });
+        
+        // Supprimer les styles JavaScript inutiles si vous n'avez pas de champs date
+        // Les champs 'date_naissance' et 'date_prise_fonction' ont été supprimés
+    });
+</script>
 {% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}
+Notes de la Classe {% if classe %}{{ classe.nom_classe }}{% else %}Sélectionner{% endif %} - {% if matiere %}{{ matiere.nom }}{% else %}Sélectionner{% endif %}
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">
+    Gestion Détaillée des Notes
+    {% if classe %}<small class="text-muted">| Classe : {{ classe.nom_classe }}</small>{% endif %}
+    {% if matiere %}<small class="text-muted">| Matière : {{ matiere.nom }}</small>{% endif %}
+    {% if annee_active %}<small class="text-muted">| Année : {{ annee_active.annee }}</small>{% endif %}
+</h2>
+
+{# Formulaire de filtrage par classe et matière #}
+<div class="mb-4 p-3 bg-light border rounded">
+    <form method="GET" action="{% url 'liste_notes_par_classe_matiere' %}" class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label for="classe_filter" class="form-label">Classe :</label>
+            <select name="classe_id" id="classe_filter" class="form-select">
+                <option value="">-- Sélectionner une classe --</option>
+                {% for c in toutes_les_classes %}
+                    <option value="{{ c.pk }}" {% if classe and c.pk == classe.pk %}selected{% endif %}>{{ c.nom_classe }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="matiere_filter" class="form-label">Matière :</label>
+            <select name="matiere_id" id="matiere_filter" class="form-select">
+                <option value="">-- Sélectionner une matière --</option>
+                {% for m in toutes_les_matieres %}
+                    <option value="{{ m.pk }}" {% if matiere and m.pk == matiere.pk %}selected{% endif %}>{{ m.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-info"><i class="fas fa-filter me-1"></i>Filtrer</button>
+            {% if classe or matiere %}
+                <a href="{% url 'liste_notes_par_classe_matiere' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i>Effacer Filtre</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{# Messages Django #}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+{# Tableau des notes et actions #}
+{% if classe and matiere %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Liste des Notes ({{ etudiants_avec_notes|length }} Élèves)</h3>
+        <div class="d-flex gap-2">
+            <a href="{% url 'import_notes_excel' %}" class="btn btn-success" data-bs-toggle="tooltip" title="Importer les notes via Excel">
+                <i class="fas fa-file-upload me-1"></i>Importer Excel
+            </a>
+            <a href="{% url 'export_notes_excel' %}?classe_id={{ classe.pk }}&matiere_id={{ matiere.pk }}" 
+   class="btn btn-secondary" data-bs-toggle="tooltip" title="Exporter les notes au format Excel">
+   <i class="fas fa-file-excel me-1"></i>Exporter Excel
+</a>
+
+        </div>
+    </div>
+
+    {% if etudiants_avec_notes %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Nom et Prénom</th>
+                        <th>Notes</th>
+                        <th>Type d'évaluation</th>
+                        <th>Date d'évaluation</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for etudiant, notes_etudiant in etudiants_avec_notes.items %}
+                        {% if notes_etudiant %}
+                            {% for note in notes_etudiant %}
+                                <tr>
+                                    <td>{{ etudiant.prenom }} {{ etudiant.nom }}</td>
+                                    <td><span class="badge bg-secondary">{{ note.valeur|floatformat:2 }}</span></td>
+                                    <td>{{ note.type_evaluation }}</td>
+                                    <td>{{ note.date_evaluation|date:"d M Y" }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'modifier_note' pk=note.pk %}" class="btn btn-warning btn-sm me-1" title="Modifier"><i class="fas fa-edit"></i></a>
+                                        <a href="{% url 'supprimer_note' pk=note.pk %}" class="btn btn-danger btn-sm" title="Supprimer"><i class="fas fa-trash-alt"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td>{{ etudiant.prenom }} {{ etudiant.nom }}</td>
+                                <td colspan="4"><span class="text-muted">Aucune note enregistrée.</span></td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="alert alert-warning">Aucun étudiant trouvé ou aucune note enregistrée pour cette matière.</p>
+    {% endif %}
+{% else %}
+    <p class="alert alert-info">Veuillez sélectionner une **Classe** et une **Matière** pour afficher les notes.</p>
+    <a href="{% url 'import_notes_excel' %}" class="btn btn-success"><i class="fas fa-file-upload me-1"></i>Importer Excel</a>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+});
+</script>
+{% endblock %}

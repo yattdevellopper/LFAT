@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie des Notes - {{ classe.nom_classe }} / {{ matiere.nom }}</title>
+    <!-- Chargement de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Styles personnalisés pour le tableau */
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background-color: #f7f7f7;
+            z-index: 10;
+        }
+        .scrollable-table {
+            max-height: 70vh; /* Limite la hauteur du tableau pour le rendre défilant */
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+    
+    <div class="container mx-auto p-4 sm:p-8">
+        <h2 class="text-3xl font-extrabold text-gray-900 mb-6">
+            Saisie des Notes : {{ classe.nom_classe }} - {{ matiere.nom }}
+        </h2>
+        <p class="text-sm text-gray-600 mb-4">Année Scolaire : {{ annee_active.annee }}</p>
+
+        <!-- Affichage des messages Django -->
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="rounded-lg p-3 text-sm font-medium {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if etudiants %}
+            <form method="POST" class="bg-white p-6 rounded-xl shadow-lg">
+                {% csrf_token %}
+                
+                <!-- Champs d'information communs à toutes les notes -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div>
+                        <label for="periode_evaluation" class="block text-sm font-medium text-gray-700 mb-1">Période d'Évaluation <span class="text-red-500">*</span></label>
+                        <!-- Les options devraient être dynamiques (T1, T2, A1, S1, etc.) -->
+                        <select name="periode_evaluation" id="periode_evaluation" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                            <option value="T1">Trimestre 1 (T1)</option>
+                            <option value="T2">Trimestre 2 (T2)</option>
+                            <option value="T3">Trimestre 3 (T3)</option>
+                            <option value="A1">Annuel</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="type_evaluation" class="block text-sm font-medium text-gray-700 mb-1">Type d'Évaluation <span class="text-red-500">*</span></label>
+                        <input type="text" id="type_evaluation" name="type_evaluation" required value="Composition" placeholder="Ex: Devoir Maison, Interro, Composition" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                    </div>
+                    <div>
+                        <label for="date_evaluation" class="block text-sm font-medium text-gray-700 mb-1">Date de l'Évaluation <span class="text-red-500">*</span></label>
+                        <input type="date" id="date_evaluation" name="date_evaluation" required value="{{ 'now'|date:'Y-m-d' }}" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border">
+                    </div>
+                </div>
+
+                <!-- Tableau de saisie des notes -->
+                <div class="scrollable-table border border-gray-300 rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="sticky-header">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
+                                    Élève
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
+                                    Note (sur 20)
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
+                                    Note Existante (Info)
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for etudiant in etudiants %}
+                                <!-- Nous utilisons l'accès par dictionnaire standard pour simuler le get_item -->
+                                {% with existing_note=notes_existantes|get:etudiant.pk %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ etudiant.prenom }} {{ etudiant.nom }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <input 
+                                            type="number" 
+                                            name="note_{{ etudiant.pk }}" 
+                                            step="0.01" 
+                                            min="0" 
+                                            max="20" 
+                                            placeholder="--/20" 
+                                            value="{% if existing_note %}{{ existing_note.valeur|floatformat:2 }}{% endif %}"
+                                            class="w-24 text-center rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1.5 border"
+                                        >
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {% if existing_note %}
+                                                <span class="text-indigo-600 font-semibold">{{ existing_note.valeur|floatformat:2 }}</span> / 20
+                                                <span class="text-xs text-gray-400">({{ existing_note.type_evaluation }})</span>
+                                            {% else %}
+                                                <span class="text-gray-400">Nouvelle note</span>
+                                            {% endif %}
+                                    </td>
+                                </tr>
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="mt-8 flex justify-end space-x-4">
+                    <!-- Bouton Annuler -->
+                    <a href="{% url 'liste_notes_par_classe_matiere' classe_id=classe.pk matiere_id=matiere.pk %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out shadow-md">
+                        Annuler
+                    </a>
+                    
+                    <!-- Bouton Soumettre -->
+                    <button type="submit" 
+                            class="inline-flex items-center px-6 py-2 border border-transparent text-lg font-medium rounded-lg shadow-xl text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                        Enregistrer les Notes
+                    </button>
+                </div>
+            </form>
+        {% else %}
+            <p class="alert alert-info p-4 bg-blue-100 text-blue-800 rounded-lg">Aucun étudiant trouvé dans la classe {{ classe.nom_classe }}. Veuillez ajouter des étudiants d'abord.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

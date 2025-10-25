@@ -15,3 +15,18 @@ def get_edt_item(edt_items, jour_heure_tuple):
     return None
 
 # Pour utiliser ce filtre, ajoutez {% load dashboard_filters %} en haut de votre template HTML.
+
+
+
+
+@register.filter
+def get_item(dictionary, key):
+    """Permet de récupérer un élément d'un dictionnaire par clé."""
+    return dictionary.get(key)
+
+
+
+
+@register.filter
+def add_class(field, css_class):
+    return field.as_widget(attrs={"class": css_class})

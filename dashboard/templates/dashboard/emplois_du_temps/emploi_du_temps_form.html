@@ -1,0 +1,103 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} un Bloc d'Emploi du Temps{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white p-4">
+                <h3 class="mb-0">
+                    <i class="fas fa-calendar-plus me-2"></i> {{ action }} un Bloc de Cours
+                </h3>
+            </div>
+            <div class="card-body p-5">
+                
+                {% if classe %}
+                    <div class="alert alert-info d-flex align-items-center mb-4">
+                        <i class="fas fa-chalkboard me-3 fs-4"></i>
+                        <div>
+                            Ce bloc sera créé pour la **Classe : {{ classe.nom_classe }}**.
+                        </div>
+                    </div>
+                {% endif %}
+
+                <form method="post" class="row g-4">
+                    {% csrf_token %}
+
+                    {# Bloc 1: Informations de Base (Classe et Jour) #}
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded h-100 bg-light">
+                            <h5 class="text-secondary border-bottom pb-2 mb-3">Informations de Base</h5>
+                            
+                            {# Champ Classe #}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold"><i class="fas fa-layer-group me-2"></i> {{ form.classe.label }}</label>
+                                {{ form.classe }}
+                                {% if form.classe.errors %}<div class="text-danger small mt-1">{{ form.classe.errors }}</div>{% endif %}
+                            </div>
+
+                            {# Champ Jour #}
+                            <div class="mb-0">
+                                <label class="form-label fw-bold"><i class="fas fa-calendar-day me-2"></i> {{ form.jour.label }}</label>
+                                {{ form.jour }}
+                                {% if form.jour.errors %}<div class="text-danger small mt-1">{{ form.jour.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Bloc 2: Plage Horaire et Détails du Cours (Heures, Matière, Enseignant) #}
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded h-100 bg-light">
+                            <h5 class="text-secondary border-bottom pb-2 mb-3">Plage Horaire</h5>
+                            <div class="row">
+                                {# Champ Heure Début #}
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-bold"><i class="far fa-clock me-2"></i> {{ form.heure_debut.label }}</label>
+                                    {{ form.heure_debut }}
+                                    {% if form.heure_debut.errors %}<div class="text-danger small mt-1">{{ form.heure_debut.errors }}</div>{% endif %}
+                                </div>
+                                {# Champ Heure Fin #}
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-bold"><i class="far fa-clock me-2"></i> {{ form.heure_fin.label }}</label>
+                                    {{ form.heure_fin }}
+                                    {% if form.heure_fin.errors %}<div class="text-danger small mt-1">{{ form.heure_fin.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                            
+                            <h5 class="text-secondary border-bottom pb-2 mb-3 mt-3">Détails du Cours</h5>
+
+                            {# Champ Matière #}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold"><i class="fas fa-book-open me-2"></i> {{ form.matiere.label }}</label>
+                                {{ form.matiere }}
+                                {% if form.matiere.errors %}<div class="text-danger small mt-1">{{ form.matiere.errors }}</div>{% endif %}
+                            </div>
+                            
+                            {# Champ Enseignant #}
+                            <div class="mb-0">
+                                <label class="form-label fw-bold"><i class="fas fa-user-tie me-2"></i> {{ form.enseignant.label }}</label>
+                                {{ form.enseignant }}
+                                {% if form.enseignant.errors %}<div class="text-danger small mt-1">{{ form.enseignant.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {# Rendre les champs cachés invisibles (comme l'année scolaire s'il y en a) #}
+                    {% for field in form.hidden_fields %}
+                        {{ field }}
+                    {% endfor %}
+
+                    <div class="col-12 mt-5 border-top pt-4">
+                        <button type="submit" class="btn btn-success btn-lg me-3 shadow-sm">
+                            <i class="fas fa-save me-2"></i> Enregistrer le Bloc
+                        </button>
+                        <a href="{% url 'liste_emplois_du_temps' %}" class="btn btn-secondary btn-lg shadow-sm">
+                            <i class="fas fa-times me-2"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

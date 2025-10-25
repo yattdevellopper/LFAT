@@ -7,164 +7,196 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; display: flex; flex-direction: column; min-height: 100vh; }
-        .wrapper { display: flex; flex: 1; } /* Added wrapper for flexbox layout */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .wrapper { display: flex; height: 100%; }
+
+        /* Sidebar */
         .sidebar {
-            background-color: #212529; /* Darker sidebar */
+            background-color: #212529;
             color: white;
-            min-height: 100vh; /* Changed to min-height for consistent height */
+            width: 220px;
             padding-top: 20px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar h3 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
         }
         .sidebar .nav-link {
-            color: #adb5bd; /* Light grey text */
+            color: #adb5bd;
             padding: 10px 15px;
             margin-bottom: 5px;
             border-radius: 5px;
         }
         .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            background-color: #343a40; /* Slightly lighter on hover/active */
+            background-color: #343a40;
             color: white;
         }
+
+        /* Contenu principal */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+
         .content {
-            padding: 30px;
+            flex: 1;
             background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            margin-top: 20px;
-            margin-bottom: 20px;
-            flex: 1; /* Allows content area to grow */
-        }
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .table img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        /* Style for form elements */
-        .form-group label {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .form-group input, .form-group select, .form-group textarea {
-            border-radius: 5px;
-            border: 1px solid #ced4da;
-            padding: 8px 12px;
-            width: 100%;
-        }
-        /* Footer specific styles */
-        .footer {
-            background-color: #212529; /* Match sidebar background */
-            color: #adb5bd;
             padding: 20px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            overflow-y: auto;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #212529;
+            color: #adb5bd;
+            padding: 10px 20px;
             text-align: center;
-            margin-top: auto; /* Pushes the footer to the bottom */
-            width: 100%; /* Ensure it spans full width */
+            flex-shrink: 0;
         }
-        .footer a {
-            color: #ffffff; /* White links */
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
+        .footer a { color: #ffffff; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <div class="wrapper"> {# Added wrapper for flexbox layout #}
-        <div class="sidebar col-md-2">
-            <h3 class="text-center mb-4">Gestion Scolaire</h3>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_accueil' %}active{% endif %}" href="{% url 'dashboard_accueil' %}">
-                        <i class="fas fa-home me-2"></i>Tableau de Bord
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'etudiant' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_etudiants' %}">
-                        <i class="fas fa-user-graduate me-2"></i>Élèves
-                    </a>
-                </li>
-                 <li class="nav-item">
-                    <a class="nav-link {% if 'classe' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_classes' %}">
-                        <i class="fas fa-chalkboard me-2"></i>Classes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'enseignant' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_enseignants' %}">
-                        <i class="fas fa-chalkboard-teacher me-2"></i>Enseignants
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'matiere' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_matieres' %}">
-                        <i class="fas fa-book me-2"></i>Matières
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'programme_matiere' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_programmes_matiere' %}">
-                        <i class="fas fa-book-reader me-2"></i>Prog. Matières
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'paiement' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_paiements_par_classe_etudiant' %}">
-                        <i class="fas fa-money-bill-wave me-2"></i>Paiements
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'presence' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'marquer_presence_classe' classe_id=1 %}"> {# Link to a default class or list of classes #}
-                        <i class="fas fa-calendar-check me-2"></i>Présences
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'annee_scolaire' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_annees_scolaires' %}">
-                        <i class="fas fa-calendar-alt me-2"></i>Années Scolaires
-                    </a>
-                </li>
-                {% if user.is_authenticated %}
-                <li class="nav-item mt-auto"> {# Push to bottom #}
-                    <a class="nav-link" href="{% url 'logout' %}">
-                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion ({{ user.username }})
-                    </a>
-                </li>
+<div class="wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3>
+            {% if request.user.profile.ecole %}
+                {{ request.user.profile.ecole.nom_etablissement }}
+            {% else %}
+                Gestion Multi-École
+            {% endif %}
+        </h3>
+
+            <!-- Barre de recherche globale -->
+    <form method="get" action="{% url 'recherche_etudiants_globale' %}" class="d-flex mb-3 px-2">
+        <input type="text" name="q" class="form-control form-control-sm me-1" placeholder="Rechercher..." required>
+        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-search"></i></button>
+    </form>
+
+        <!-- Dropdown pour changer d'école si multi-école -->
+        {% if toutes_les_ecoles %}
+        <div class="dropdown text-center mb-3">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                {% if request.user.profile.ecole %}
+                    {{ request.user.profile.ecole.nom_etablissement }}
+                {% else %}
+                    Sélectionner une école
                 {% endif %}
+            </button>
+            <ul class="dropdown-menu">
+                {% for ecole in toutes_les_ecoles %}
+                    <li>
+                        <a class="dropdown-item" href="{% url 'changer_ecole' ecole.pk %}">
+                            {{ ecole.nom_etablissement }}
+                        </a>
+                    </li>
+                {% endfor %}
             </ul>
         </div>
+        {% endif %}
 
-        <div class="col-md-10 d-flex flex-column"> {# Added d-flex flex-column to main content column #}
-            {% if messages %}
-                <div class="messages mt-3">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_accueil' %}active{% endif %}" href="{% url 'dashboard_accueil' %}">
+                    <i class="fas fa-home me-2"></i>Tableau de Bord
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'etudiant' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_etudiants' %}">
+                    <i class="fas fa-user-graduate me-2"></i>Élèves
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'classe' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_classes' %}">
+                    <i class="fas fa-chalkboard me-2"></i>Classes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'enseignant' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_enseignants' %}">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>Enseignants
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'matiere' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_matieres' %}">
+                    <i class="fas fa-book me-2"></i>Matières
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'programme_matiere' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_programmes_matiere' %}">
+                    <i class="fas fa-book-reader me-2"></i>Prog. Matières
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'paiement' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_paiements_par_classe_etudiant' %}">
+                    <i class="fas fa-money-bill-wave me-2"></i>Paiements
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'presence' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_presences' %}">
+                    <i class="fas fa-calendar-check me-2"></i>Présences
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'annee_scolaire' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'liste_annees_scolaires' %}">
+                    <i class="fas fa-calendar-alt me-2"></i>Années Scolaires
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'ecole_settings' %}active{% endif %}" href="{% url 'ecole_settings' %}">
+                    <i class="fas fa-cog me-2"></i>Paramètres
+                </a>
+            </li>
+            {% if user.is_authenticated %}
+            <li class="nav-item mt-auto">
+                <a class="nav-link" href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Déconnexion ({{ user.username }})
+                </a>
+            </li>
             {% endif %}
-
-            <div class="content flex-grow-1"> {# Added flex-grow-1 to push footer down #}
-                {% block content %}
-                {% endblock %}
-            </div>
-        </div>
+        </ul>
     </div>
 
-    {# --- Footer Section --- #}
-    <footer class="footer">
-        <div class="container-fluid">
-            <p class="mb-0">&copy; 2025 Gestion Scolaire - Développé par Aliou AG Moussa Yattara</p>
-            <p class="mb-0">Contact : <a href="tel:+22362015068">+223 62015068</a> | Email : <a href="mailto:yaliouagmoussa@gmail.com">yaliouagmoussa@gmail.com</a></p>
+    <!-- Contenu principal -->
+    <div class="main-content">
+        {% if messages %}
+        <div class="messages mb-2">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
         </div>
-    </footer>
-    {# --- End Footer Section --- #}
+        {% endif %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block extra_js %}
-    {% endblock %}
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

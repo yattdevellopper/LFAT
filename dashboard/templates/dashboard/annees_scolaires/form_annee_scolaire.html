@@ -2,92 +2,98 @@
 {% load static %}
 
 {% block title %}
-    {% if annee_scolaire %}Modifier l'Année Scolaire{% else %}Ajouter une Année Scolaire{% endif %}
+    {% if action == 'Modifier' %}Modifier l'Année Scolaire{% else %}Ajouter une Année Scolaire{% endif %}
 {% endblock %}
 
 {% block content %}
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            {% if annee_scolaire %}Modifier l'Année Scolaire{% else %}Ajouter une Nouvelle Année Scolaire{% endif %}
-        </h1>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+        {% if action == 'Modifier' %}Modifier l'Année Scolaire{% else %}Ajouter une Nouvelle Année Scolaire{% endif %}
+    </h1>
+</div>
+
+{% if messages %}
+<div class="mb-4">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-info-circle me-2"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card shadow-lg mb-4 border-0">
+    <div class="card-header py-3 bg-primary text-white">
+        <h5 class="m-0 fw-bold">
+            {% if action == 'Modifier' %}
+                <i class="fas fa-edit me-2"></i> Modification de l'Année : {{ form.instance.annee }}
+            {% else %}
+                <i class="fas fa-plus-circle me-2"></i> Nouvelle Année Scolaire
+            {% endif %}
+        </h5>
     </div>
+    <div class="card-body p-4">
+        <form method="post" class="row g-4">
+            {% csrf_token %}
 
-    {# Affichage des messages Django (succès, erreur, etc.) #}
-    {% if messages %}
-        <div class="mb-4">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% if form.non_field_errors %}
+            <div class="col-12">
+                <div class="alert alert-danger" role="alert">
+                    <strong>Erreur(s) :</strong>
+                    {% for error in form.non_field_errors %}
+                        <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
                 </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+            </div>
+            {% endif %}
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">
-                {% if annee_scolaire %}Modification de l'Année : {{ annee_scolaire.annee }}{% else %}Nouvelle Année Scolaire{% endif %}
-            </h6>
-        </div>
-        <div class="card-body">
-            {# Le formulaire pointe vers l'URL d'ajout ou de modification selon le cas #}
-            <form method="post" action="{% if annee_scolaire %}{% url 'modifier_annee_scolaire' annee_scolaire.pk %}{% else %}{% url 'creer_annee_scolaire' %}{% endif %}">                {% csrf_token %} {# Très important pour la sécurité Django #}
-
-                {# Affichage des erreurs globales du formulaire #}
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for error in form.non_field_errors %}
-                            {{ error }}
-                        {% endfor %}
+            <div class="col-md-6">
+                <label for="{{ form.annee.id_for_label }}" class="form-label fw-bold">
+                    <i class="fas fa-graduation-cap me-2"></i> Année Scolaire
+                </label>
+                {{ form.annee }}
+                {% if form.annee.errors %}
+                    <div class="text-danger small">
+                        {% for error in form.annee.errors %}{{ error }}{% endfor %}
                     </div>
                 {% endif %}
+                <div class="form-text text-muted">
+                    Format requis : 2023-2024.
+                    {% if action == 'Modifier' %}Non modifiable après création.{% endif %}
+                </div>
+            </div>
 
-                <div class="row">
-                    {# Champ 'annee' (par exemple: 2023-2024) #}
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.annee.id_for_label }}" class="form-label">Année Scolaire</label>
-                        {{ form.annee }}
-                        {% if form.annee.errors %}
-                            <div class="text-danger small">
-                                {% for error in form.annee.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text text-muted">Exemple : 2023-2024</div>
-                    </div>
-
-                    {# Champ 'active' (case à cocher) #}
-                    <div class="col-md-6 mb-3 form-check d-flex align-items-center pt-4"> {# Ajout de padding-top pour aligner #}
+            <div class="col-md-6">
+                <div class="alert alert-warning p-3 h-100 mb-0 d-flex flex-column justify-content-center">
+                    <div class="form-check">
                         {{ form.active }}
-                        <label class="form-check-label ms-2" for="{{ form.active.id_for_label }}">
-                            Marquer comme Année Active
+                        <label class="form-check-label fw-bold" for="{{ form.active.id_for_label }}">
+                            <i class="fas fa-star me-2"></i> Marquer comme Année Active
                         </label>
-                        {% if form.active.errors %}
-                            <div class="text-danger small">
-                                {% for error in form.active.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text text-muted">
-                            Si cochée, cette année sera l'année scolaire par défaut pour les nouvelles entrées.
-                            <br>Attention : Activer une année désactivera toutes les autres.
+                    </div>
+                    {% if form.active.errors %}
+                        <div class="text-danger small mt-2">
+                            {% for error in form.active.errors %}{{ error }}{% endfor %}
                         </div>
+                    {% endif %}
+                    <div class="mt-2 small text-dark">
+                        **Attention :** Cocher cette case désactivera toutes les autres années pour votre école.
                     </div>
                 </div>
+            </div>
 
-                {# Boutons d'action #}
-                <div class="d-flex justify-content-start mt-4">
-                    <button type="submit" class="btn btn-success me-2">
-                        <i class="fas fa-save me-1"></i>
-                        {% if annee_scolaire %}Enregistrer les Modifications{% else %}Ajouter l'Année Scolaire{% endif %}
-                    </button>
-                    {# Le bouton d'annulation redirige vers la liste des années scolaires #}
-                    <a href="{% url 'liste_annees_scolaires' %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Annuler et Retour</a>
-                </div>
-            </form>
-        </div>
+            <div class="col-12 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-success btn-lg me-3 shadow-sm">
+                    <i class="fas fa-save me-2"></i>
+                    {% if action == 'Modifier' %}Enregistrer les Modifications{% else %}Ajouter l'Année Scolaire{% endif %}
+                </button>
+                <a href="{% url 'liste_annees_scolaires' %}" class="btn btn-secondary btn-lg shadow-sm">
+                    <i class="fas fa-times me-2"></i> Annuler et Retour
+                </a>
+            </div>
+        </form>
     </div>
+</div>
 {% endblock %}

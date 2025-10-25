@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Carte Scolaire - {{ etudiant.prenom }} {{ etudiant.nom }}</title>
+    <style>
+        /* --- STYLE GÉNÉRAL --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+
+        /* --- CONTENEUR PRINCIPAL --- */
+        .carte {
+            width: 370px;
+            height: 230px;
+            margin: 25px auto;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border: 3px solid #001f3f;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* --- EN-TÊTE --- */
+        .header {
+            background-color: #001f3f;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-bottom: 3px solid #ffc300;
+            position: relative;
+        }
+
+        .header h2 {
+            font-size: 17px;
+            font-weight: 800;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .header .academie {
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+        .header img.logo-img {
+            height: 35px;
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        /* --- CONTENU PRINCIPAL --- */
+        .body-content {
+            display: flex;
+            flex-grow: 1;
+            padding: 10px;
+            align-items: flex-start;
+        }
+
+        /* Photo de l’élève */
+        .photo-container {
+            width: 90px;
+            height: 115px;
+            margin-right: 15px;
+            border: 3px solid #001f3f;
+            border-radius: 6px;
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            font-size: 11px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        /* Informations de l’élève */
+        .infos {
+            flex-grow: 1;
+            padding-right: 5px;
+        }
+
+        .infos h3 {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 0 0 6px 0;
+            color: #001f3f;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 3px;
+        }
+
+        .info-detail {
+            font-size: 11px;
+            margin: 3px 0;
+            line-height: 1.5;
+        }
+
+        .info-detail strong {
+            color: #4b5563;
+            min-width: 75px;
+            display: inline-block;
+        }
+
+        .classe-name {
+            color: #008080;
+            font-weight: 800;
+        }
+
+        /* QR Code */
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .qr-container {
+            width: 70px;
+            height: 70px;
+            border: 2px solid #001f3f;
+            padding: 2px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        .qr-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .qr-label {
+            font-size: 8px;
+            text-align: center;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* --- PIED DE PAGE --- */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 8px 10px;
+            background-color: #f3f4f6;
+            border-top: 1px dashed #001f3f;
+            font-size: 9px;
+            color: #1f2937;
+        }
+
+        .footer-item {
+            text-align: center;
+            width: 48%;
+        }
+
+        .footer-item img {
+            max-height: 40px;
+            margin-bottom: 3px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #001f3f;
+            margin: 3px 0 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="carte">
+
+        <!-- ===================== EN-TÊTE ===================== -->
+        <div class="header">
+            {% if ecole.logo %}
+                <img src="{{ ecole.logo.url }}" alt="Logo" class="logo-img">
+            {% endif %}
+            
+            <p style="margin:0; font-size:11px; font-weight:700;">
+                REPUBLIQUE DU MALI <br> UN PEUPLE - UN BUT - UNE FOI
+            </p>
+
+            <h2>  {{ ecole.nom_etablissement|upper|default:"CARTE D'IDENTITÉ SCOLAIRE" }}</h2>
+            <p class="academie">
+                 {{ ecole.adresse_etablissement|default:"Adresse non définie" }} |
+
+                Tél : {{ ecole.telephone|default:"---" }}
+            </p>
+        </div>
+
+        <!-- ===================== CONTENU ===================== -->
+        <div class="body-content">
+            <!-- Photo -->
+            <div class="photo-container">
+                {% if etudiant.photo_profil %}
+                    <img src="{{ etudiant.photo_profil.url }}" alt="Photo">
+                {% else %}
+                    <div class="photo-placeholder">PHOTO OFFICIELLE</div>
+                {% endif %}
+            </div>
+
+            <!-- Informations -->
+            <div class="infos">
+                <h3>{{ etudiant.prenom }} {{ etudiant.nom }}</h3>
+                <p class="info-detail"><strong>Matricule :</strong> {{ etudiant.numero_matricule|default:"N/A" }}</p>
+                <p class="info-detail">
+                    <strong>Classe :</strong> 
+                    <span class="classe-name">
+                        {% if etudiant.classe %}
+                            {{ etudiant.classe.nom_classe }}
+                        {% else %}
+                            Non assigné
+                        {% endif %}
+                    </span>
+                </p>
+                <p class="info-detail"><strong>Naissance :</strong> {{ etudiant.date_naissance|date:"d M Y"|default:"N/A" }}</p>
+                <p class="info-detail"><strong>Sexe :</strong> {{ etudiant.get_genre_display|default:"N/A" }}</p>
+                <p class="info-detail">
+                    <strong>Année :</strong> 
+                    {% if annee_scolaire %}
+                        {{ annee_scolaire.annee }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- QR Code -->
+            <div class="qr-section">
+                <div class="qr-container">
+                    {% if qr_code %}
+                        <img src="{{ qr_code }}" alt="QR">
+                    {% elif qr_code_base64 %}
+                        <img src="{{ qr_code_base64 }}" alt="QR">
+                    {% endif %}
+                </div>
+                <p class="qr-label">Scan pour vérifier</p>
+            </div>
+        </div>
+
+        <!-- ===================== PIED DE PAGE ===================== -->
+        <div class="footer">
+            <!-- Cachet -->
+            <div class="footer-item">
+                {% if ecole.cachet_admin %}
+                    <img src="{{ ecole.cachet_admin.url }}" alt="Cachet">
+                {% endif %}
+                <div class="signature-line"></div>
+                <p>Cachet de l'établissement</p>
+            </div>
+
+            <!-- Signature Directeur -->
+            <div class="footer-item">
+                {% if ecole.signature_directeur %}
+                    <img src="{{ ecole.signature_directeur.url }}" alt="Signature Directeur">
+                {% endif %}
+                <div class="signature-line"></div>
+                <p>
+                    {{ ecole.titre_signataire|default:"Le Directeur" }}<br>
+                    {{ ecole.nom_signataire|default:"[Nom Signataire]" }}
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
